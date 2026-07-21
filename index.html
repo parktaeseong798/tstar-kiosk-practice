@@ -1,0 +1,2746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-Star AI 키오스크 연습장 — 시니어를 위한 무인 주문기 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1a56db;
+  --primary-dark:#173f9e;
+  --success:#15803d;
+  --success-bg:#dcfce7;
+  --warn:#b45309;
+  --warn-bg:#fef3c7;
+  --bg-page:#eef2f7;
+  --kiosk-bg:#ffffff;
+  --surface:#f8fafc;
+  --text:#111827;
+  --text-secondary:#4b5563;
+  --text-faint:#9ca3af;
+  --border:#d8dee8;
+  --radius-lg:24px;
+  --radius-md:16px;
+  --font-scale:1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:calc(18px * var(--font-scale));}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  background:var(--bg-page);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.5;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+[role="button"]{cursor:pointer;}
+[role="button"]:focus-visible, button:focus-visible{outline:3px solid var(--primary-dark);outline-offset:2px;}
+.app-shell{max-width:1100px;margin:0 auto;padding:24px 20px 60px;}
+
+/* ---------- Header ---------- */
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 22px;background:var(--kiosk-bg);
+  border-radius:var(--radius-md);border:1px solid var(--border);
+  margin-bottom:22px;
+}
+.app-header .brand{display:flex;align-items:center;gap:10px;font-size:1.3rem;font-weight:900;color:var(--primary-dark);}
+.app-header .brand span.dot{width:12px;height:12px;border-radius:50%;background:var(--primary);display:inline-block;}
+
+/* ---------- Views ---------- */
+.view{display:none;}
+.view.active{display:block;}
+
+/* ---------- Hub ---------- */
+.hub-intro{
+  background:var(--kiosk-bg);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:32px;margin-bottom:26px;
+}
+.hub-intro h1{font-size:1.9rem;font-weight:900;margin-bottom:12px;color:var(--text);}
+.hub-intro p{font-size:1.05rem;color:var(--text-secondary);max-width:720px;}
+.hub-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:18px;
+}
+.hub-card{
+  background:var(--kiosk-bg);border:2px solid var(--border);
+  border-radius:var(--radius-lg);padding:26px 20px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  position:relative;
+}
+.hub-card.enabled{cursor:pointer;}
+.hub-card.enabled:hover{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 10px 24px rgba(26,86,219,.14);}
+.hub-card .emoji{font-size:3rem;}
+.hub-card .name{font-size:1.25rem;font-weight:700;}
+.hub-card .status{font-size:.95rem;color:var(--success);font-weight:700;}
+.hub-card.disabled{opacity:.55;}
+.hub-card.disabled .status{color:var(--text-faint);}
+.badge-soon{
+  position:absolute;top:14px;right:14px;background:var(--surface);
+  color:var(--text-secondary);font-size:.78rem;font-weight:700;
+  padding:4px 10px;border-radius:999px;border:1px solid var(--border);
+}
+
+/* ---------- Toast (hub) ---------- */
+.hub-toast{
+  position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);
+  background:var(--text);color:#fff;padding:16px 26px;border-radius:999px;
+  font-size:1.05rem;font-weight:600;opacity:0;pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;z-index:50;
+}
+.hub-toast.show{opacity:1;transform:translate(-50%,0);}
+
+/* ---------- Practice toolbar ---------- */
+.practice-toolbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  background:var(--kiosk-bg);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:12px 16px;margin-bottom:18px;
+}
+.toolbar-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:12px 18px;border-radius:999px;font-weight:700;font-size:1rem;
+  border:2px solid var(--border);background:var(--surface);color:var(--text);
+}
+.toolbar-btn:disabled{opacity:.4;cursor:not-allowed;}
+.toolbar-btn.hint{border-color:#f59e0b;color:#92400e;background:#fffbeb;}
+.toolbar-btn.restart{border-color:#dc2626;color:#991b1b;background:#fef2f2;}
+.toolbar-spacer{flex:1;}
+.font-toggle{display:flex;gap:6px;}
+.font-toggle button{
+  width:42px;height:42px;border-radius:10px;border:2px solid var(--border);
+  background:var(--surface);font-weight:900;font-size:1rem;
+}
+.progress-wrap{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text-secondary);}
+.progress-dots{display:flex;gap:6px;}
+.progress-dots .dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+.progress-dots .dot.done{background:var(--success);}
+.progress-dots .dot.current{background:var(--primary);}
+
+/* ---------- Kiosk frame ---------- */
+.kiosk-frame{
+  background:#26272b;border-radius:32px;padding:18px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+.kiosk-screen{
+  background:var(--kiosk-bg);border-radius:20px;
+  min-height:560px;padding:36px 32px;position:relative;overflow:hidden;
+}
+.hint-banner{
+  background:var(--warn-bg);border:2px solid #f59e0b;color:var(--warn);
+  border-radius:var(--radius-md);padding:14px 18px;margin-bottom:20px;
+  font-weight:700;font-size:1.05rem;display:flex;gap:10px;align-items:flex-start;
+}
+
+.screen-title{font-size:1.7rem;font-weight:900;margin-bottom:8px;}
+.screen-sub{font-size:1.05rem;color:var(--text-secondary);margin-bottom:26px;}
+
+.big-tap-btn{
+  width:100%;min-height:220px;border-radius:var(--radius-lg);
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;font-size:1.8rem;font-weight:900;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+}
+.big-tap-btn .emoji{font-size:4rem;}
+
+.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.choice-card{
+  border:2px solid var(--border);border-radius:var(--radius-lg);
+  padding:30px 20px;text-align:center;font-size:1.3rem;font-weight:700;
+  background:var(--surface);
+}
+.choice-card .emoji{font-size:2.6rem;display:block;margin-bottom:10px;}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px;}
+.tab-btn{
+  padding:12px 20px;border-radius:999px;font-weight:700;font-size:1.05rem;
+  border:2px solid var(--border);background:var(--surface);color:var(--text-secondary);
+}
+.tab-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px;}
+.menu-card{
+  border:2px solid var(--border);border-radius:var(--radius-md);
+  padding:20px 14px;text-align:center;background:var(--surface);position:relative;
+}
+.menu-card .emoji{font-size:2.4rem;}
+.menu-card .name{font-size:1.1rem;font-weight:700;margin:8px 0 4px;}
+.menu-card .price{font-size:.95rem;color:var(--text-secondary);}
+.menu-card.scanned{border-color:var(--success);background:var(--success-bg);}
+.menu-card.scanned::after{content:"✅";position:absolute;top:8px;right:8px;font-size:1.2rem;}
+.scan-total{font-size:1.35rem;font-weight:900;text-align:right;margin-top:18px;color:var(--primary-dark);}
+
+.keypad-display{display:flex;justify-content:center;gap:14px;margin:24px 0 30px;}
+.keypad-digit{
+  width:56px;height:66px;border:2px solid var(--border);border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;font-weight:900;background:var(--surface);color:var(--text-faint);
+}
+.keypad-digit.filled{border-color:var(--primary);color:var(--primary-dark);background:#eef2ff;}
+.keypad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:340px;margin:0 auto;}
+.keypad-btn{padding:20px 0;border-radius:var(--radius-md);border:2px solid var(--border);background:var(--surface);font-size:1.6rem;font-weight:800;color:var(--text);}
+.keypad-btn.wide{font-size:1rem;}
+
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:22px;border:2px solid var(--border);border-radius:var(--radius-md);margin-bottom:24px;
+}
+.toggle-label{font-size:1.15rem;font-weight:700;}
+.toggle-switch{
+  width:64px;height:36px;border-radius:999px;background:var(--border);
+  position:relative;flex:0 0 auto;transition:background .2s ease;
+}
+.toggle-switch.on{background:var(--success);}
+.toggle-knob{
+  position:absolute;top:3px;left:3px;width:30px;height:30px;border-radius:50%;
+  background:#fff;transition:left .2s ease;box-shadow:0 2px 4px rgba(0,0,0,.2);
+}
+.toggle-switch.on .toggle-knob{left:31px;}
+
+.cart-row-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.cart-row-item .info{display:flex;justify-content:space-between;flex:1;font-size:1.15rem;gap:12px;}
+.cart-row-item .info .label{color:var(--text-secondary);}
+.delete-btn{background:none;border:2px solid transparent;font-size:1.3rem;padding:6px 10px;border-radius:10px;margin-left:10px;}
+.delete-btn:hover{background:var(--surface);border-color:var(--border);}
+
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.calendar-head{text-align:center;font-weight:700;color:var(--text-secondary);font-size:.95rem;padding-bottom:8px;}
+.calendar-day{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:12px;border:2px solid var(--border);background:var(--surface);
+  font-size:1.1rem;font-weight:700;
+}
+.calendar-day.today{border-color:var(--primary);background:#eef2ff;color:var(--primary-dark);}
+
+.seat-map{display:flex;flex-direction:column;gap:10px;align-items:center;margin-bottom:8px;}
+.seat-row{display:flex;gap:10px;align-items:center;}
+.seat-aisle{width:22px;}
+.seat{
+  width:54px;height:54px;border-radius:10px 10px 4px 4px;
+  border:2px solid var(--border);background:var(--surface);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;
+}
+.seat.occupied{background:var(--text-faint);border-color:var(--text-faint);color:#fff;opacity:.65;}
+.seat-legend{display:flex;gap:20px;justify-content:center;margin-top:16px;font-size:.95rem;color:var(--text-secondary);font-weight:600;}
+.seat-legend span{display:inline-flex;align-items:center;gap:6px;}
+.seat-swatch{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);display:inline-block;}
+.seat-swatch.occupied{background:var(--text-faint);border-color:var(--text-faint);}
+
+.ticket-box{
+  border:2px dashed var(--border);border-radius:var(--radius-md);
+  padding:24px;margin-bottom:22px;background:var(--surface);
+}
+
+.option-block{margin-bottom:26px;}
+.option-label{font-size:1.15rem;font-weight:700;margin-bottom:12px;}
+.option-row{display:flex;gap:12px;flex-wrap:wrap;}
+.option-btn{
+  padding:16px 26px;border-radius:var(--radius-md);font-size:1.15rem;font-weight:700;
+  border:2px solid var(--border);background:var(--surface);color:var(--text);
+}
+.option-btn.selected{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.people-row{display:flex;gap:14px;flex-wrap:wrap;}
+.people-card{
+  flex:1 1 140px;border:2px solid var(--border);border-radius:var(--radius-lg);
+  padding:26px 14px;text-align:center;font-size:1.3rem;font-weight:700;background:var(--surface);
+}
+.people-card .emoji{font-size:2.4rem;display:block;margin-bottom:8px;}
+
+.qty-stepper{display:flex;align-items:center;gap:22px;justify-content:center;margin:24px 0;}
+.qty-btn{
+  width:64px;height:64px;border-radius:50%;background:var(--surface);
+  border:2px solid var(--border);font-size:1.8rem;font-weight:900;color:var(--text);
+}
+.qty-num{font-size:2.2rem;font-weight:900;min-width:60px;text-align:center;}
+
+.confirm-btn{
+  width:100%;padding:22px;border-radius:var(--radius-md);
+  background:var(--success);color:#fff;font-size:1.4rem;font-weight:900;margin-top:8px;
+}
+.ghost-btn{
+  width:100%;padding:18px;border-radius:var(--radius-md);
+  background:var(--surface);color:var(--text-secondary);font-size:1.1rem;font-weight:700;
+  border:2px dashed var(--border);margin-top:12px;
+}
+
+.cart-box{border:2px solid var(--border);border-radius:var(--radius-md);padding:22px;margin-bottom:22px;}
+.cart-row{display:flex;justify-content:space-between;font-size:1.15rem;padding:8px 0;border-bottom:1px solid var(--border);}
+.cart-row:last-child{border-bottom:none;}
+.cart-row .label{color:var(--text-secondary);}
+
+.pay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.pay-card{
+  border:2px solid var(--border);border-radius:var(--radius-lg);
+  padding:26px 12px;text-align:center;font-size:1.2rem;font-weight:700;background:var(--surface);
+}
+.pay-card .emoji{font-size:2.6rem;display:block;margin-bottom:10px;}
+
+.card-slot-wrap{display:flex;flex-direction:column;align-items:center;gap:24px;padding:20px 0;}
+.card-slot{
+  width:220px;height:140px;border-radius:14px;
+  background:linear-gradient(135deg,#374151,#1f2937);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.4rem;
+}
+.card-slot.inserting{animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+.status-text{font-size:1.2rem;font-weight:700;color:var(--text-secondary);min-height:1.6em;}
+
+.done-box{text-align:center;padding:20px 0;}
+.done-box .emoji{font-size:4.2rem;margin-bottom:16px;}
+.order-number{
+  display:inline-block;background:var(--primary);color:#fff;font-size:2.2rem;font-weight:900;
+  padding:14px 34px;border-radius:var(--radius-md);margin:16px 0 22px;
+}
+
+.hint-target{
+  outline:4px solid #f59e0b;outline-offset:3px;
+  animation:hintpulse 1.1s ease infinite;border-radius:14px;
+}
+@keyframes hintpulse{0%,100%{outline-color:#f59e0b;}50%{outline-color:#fbbf24;}}
+.shake{animation:shake .35s ease;}
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-6px);}
+  75%{transform:translateX(6px);}
+}
+
+#feedback-toast{
+  position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);
+  max-width:520px;background:var(--warn-bg);border:2px solid #f59e0b;color:var(--warn);
+  padding:16px 24px;border-radius:var(--radius-md);font-size:1.05rem;font-weight:700;
+  opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:60;
+  text-align:center;
+}
+#feedback-toast.show{opacity:1;transform:translate(-50%,0);}
+#feedback-toast.ok{background:var(--success-bg);border-color:#22c55e;color:var(--success);}
+
+/* ---------- Summary view ---------- */
+.summary-box{
+  background:var(--kiosk-bg);border-radius:var(--radius-lg);border:1px solid var(--border);
+  padding:44px;text-align:center;
+}
+.summary-box .emoji{font-size:4rem;margin-bottom:14px;}
+.summary-box h2{font-size:1.9rem;font-weight:900;margin-bottom:10px;}
+.summary-box p{color:var(--text-secondary);font-size:1.1rem;margin-bottom:26px;}
+.stat-row{display:flex;justify-content:center;gap:36px;margin-bottom:32px;flex-wrap:wrap;}
+.stat-item{min-width:140px;}
+.stat-item .num{font-size:2rem;font-weight:900;color:var(--primary-dark);}
+.stat-item .label{color:var(--text-secondary);font-size:.95rem;font-weight:600;}
+.summary-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.summary-actions button{
+  padding:18px 30px;border-radius:999px;font-size:1.1rem;font-weight:800;
+}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-secondary{background:var(--surface);color:var(--text);border:2px solid var(--border);}
+
+@media (max-width:640px){
+  .choice-row{grid-template-columns:1fr;}
+  .pay-grid{grid-template-columns:1fr;}
+  .kiosk-screen{padding:24px 18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <header class="app-header">
+    <div class="brand"><span class="dot"></span>T-Star AI 키오스크 연습장</div>
+  </header>
+
+  <!-- ================= HUB ================= -->
+  <main id="view-hub" class="view active">
+    <div class="hub-intro">
+      <h1>어떤 매장을 연습해볼까요?</h1>
+      <p>실제 키오스크와 똑같이 생긴 화면에서 안전하게 연습할 수 있어요. 잘못 눌러도 괜찮아요 — 다시 안내해 드립니다. 원하는 매장을 눌러서 시작해보세요.</p>
+    </div>
+    <div class="hub-grid" id="hub-grid"></div>
+  </main>
+
+  <!-- ================= PRACTICE ================= -->
+  <main id="view-practice" class="view">
+    <div class="practice-toolbar">
+      <button class="toolbar-btn" id="btn-to-hub">🏠 매장 선택</button>
+      <span id="practice-title" style="font-weight:800;color:var(--text-secondary);"></span>
+      <button class="toolbar-btn" id="btn-back" disabled>◀ 이전 화면</button>
+      <button class="toolbar-btn restart" id="btn-restart">🔄 처음부터</button>
+      <div class="toolbar-spacer"></div>
+      <button class="toolbar-btn hint" id="btn-hint">💡 힌트 보기</button>
+      <div class="font-toggle">
+        <button id="font-down" title="글자 작게">가−</button>
+        <button id="font-up" title="글자 크게">가+</button>
+      </div>
+    </div>
+    <div class="progress-wrap" style="margin-bottom:14px;">
+      <span id="progress-label">1단계 / 8단계</span>
+      <div class="progress-dots" id="progress-dots"></div>
+    </div>
+
+    <div class="kiosk-frame">
+      <div class="kiosk-screen" id="kiosk-screen"></div>
+    </div>
+  </main>
+
+  <!-- ================= SUMMARY ================= -->
+  <main id="view-summary" class="view">
+    <div class="summary-box">
+      <div class="emoji">🎉</div>
+      <h2 id="summary-title">주문 연습을 완료했어요!</h2>
+      <p>실제 매장에서도 이 순서대로 하시면 돼요. 정말 잘하셨어요!</p>
+      <div class="stat-row">
+        <div class="stat-item"><div class="num" id="stat-time">0분 0초</div><div class="label">걸린 시간</div></div>
+        <div class="stat-item"><div class="num" id="stat-hints">0회</div><div class="label">힌트 사용</div></div>
+        <div class="stat-item"><div class="num" id="stat-mistakes">0회</div><div class="label">다시 시도</div></div>
+      </div>
+      <div class="summary-actions">
+        <button class="btn-primary" id="btn-next-scenario" style="display:none;"></button>
+        <button class="btn-secondary" id="btn-retry">다시 연습하기</button>
+        <button class="btn-secondary" id="btn-summary-hub">🏠 다른 매장 보기</button>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<div class="hub-toast" id="hub-toast"></div>
+<div id="feedback-toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ 공통: 화면 전환 ============ */
+  function showView(id){
+    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+    document.getElementById(id).classList.add("active");
+  }
+
+  /* 받침 유무에 따라 조사(은/는, 이/가, 이에요/예요 등)를 자동으로 골라줌 */
+  function hasBatchim(word){
+    var w = (word || "").trim();
+    var ch = w.charCodeAt(w.length - 1);
+    if(isNaN(ch) || ch < 0xAC00 || ch > 0xD7A3) return false;
+    return (ch - 0xAC00) % 28 !== 0;
+  }
+  function josa(word, withBatchim, noBatchim){
+    return hasBatchim(word) ? withBatchim : noBatchim;
+  }
+
+  /* div 기반 카드도 키보드/스크린리더로 사용할 수 있도록 버튼 역할 부여 */
+  function bindActivate(el, handler){
+    el.setAttribute("tabindex", "0");
+    if(!el.hasAttribute("role")) el.setAttribute("role", "button");
+    el.addEventListener("click", handler);
+    el.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " " || e.key === "Spacebar"){
+        e.preventDefault();
+        handler(e);
+      }
+    });
+  }
+
+  /* ============ 글자 크기 조절 ============ */
+  var fontLevels = [1, 1.15, 1.3];
+  var fontLevelIdx = 0;
+  function applyFontScale(){
+    document.documentElement.style.setProperty("--font-scale", fontLevels[fontLevelIdx]);
+  }
+  document.getElementById("font-up").addEventListener("click", function(){
+    fontLevelIdx = Math.min(fontLevelIdx + 1, fontLevels.length - 1);
+    applyFontScale();
+  });
+  document.getElementById("font-down").addEventListener("click", function(){
+    fontLevelIdx = Math.max(fontLevelIdx - 1, 0);
+    applyFontScale();
+  });
+
+  /* ============ 허브 화면 ============ */
+  var stores = [
+    { id:"cafe", name:"카페", emoji:"☕", enabled:true },
+    { id:"restaurant", name:"음식점", emoji:"🍽️", enabled:true },
+    { id:"mart", name:"마트", emoji:"🛒", enabled:true },
+    { id:"hospital", name:"병원", emoji:"🏥", enabled:true },
+    { id:"store", name:"무인가게", emoji:"🏪", enabled:true },
+    { id:"fastfood", name:"패스트푸드", emoji:"🍔", enabled:true },
+    { id:"bus", name:"버스", emoji:"🚌", enabled:true },
+    { id:"civil", name:"무인민원발급기", emoji:"🏛️", enabled:true }
+  ];
+
+  var hubGrid = document.getElementById("hub-grid");
+  stores.forEach(function(store){
+    var card = document.createElement("div");
+    card.className = "hub-card " + (store.enabled ? "enabled" : "disabled");
+    card.innerHTML =
+      (store.enabled ? "" : '<span class="badge-soon">준비 중</span>') +
+      '<span class="emoji">' + store.emoji + '</span>' +
+      '<span class="name">' + store.name + '</span>' +
+      '<span class="status">' + (store.enabled ? "연습 시작 가능" : "곧 추가돼요") + '</span>';
+    bindActivate(card, function(){
+      if(store.enabled){
+        startScenario(store.id);
+      } else {
+        showHubToast(store.name + josa(store.name, "은", "는") + " 곧 준비돼요! 먼저 다른 매장부터 연습해보세요 😊");
+      }
+    });
+    hubGrid.appendChild(card);
+  });
+
+  var hubToastTimer = null;
+  function showHubToast(msg){
+    var el = document.getElementById("hub-toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(hubToastTimer);
+    hubToastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2400);
+  }
+
+  document.getElementById("btn-to-hub").addEventListener("click", function(){ showView("view-hub"); });
+  document.getElementById("btn-summary-hub").addEventListener("click", function(){ showView("view-hub"); });
+  document.getElementById("btn-retry").addEventListener("click", function(){ startScenario(currentScenarioId); });
+  document.getElementById("btn-restart").addEventListener("click", function(){ startScenario(currentScenarioId); });
+
+  document.getElementById("btn-back").addEventListener("click", function(){
+    if(history.length > 0){
+      screenIndex = history.pop();
+      renderScreen();
+    }
+  });
+
+  document.getElementById("btn-hint").addEventListener("click", function(){
+    hintsUsed++;
+    var screen = currentScreens[screenIndex];
+    var hintText = typeof screen.hint === "function" ? screen.hint() : screen.hint;
+    showFeedback(hintText, false);
+    document.querySelectorAll(".hint-target").forEach(function(el){ el.classList.remove("hint-target"); });
+    if(screen.hintTargets){
+      screen.hintTargets().forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){ el.classList.add("hint-target"); });
+      });
+    }
+  });
+
+  /* ============ 연습 엔진 (모든 매장 공통) ============ */
+  var scenarioDefs = {};
+  var state, screenIndex, history, currentScenarioId, currentScreens;
+  var mistakes = 0, hintsUsed = 0, startTime = 0;
+
+  function startScenario(id){
+    var def = scenarioDefs[id];
+    currentScenarioId = id;
+    currentScreens = def.screens;
+    state = def.initialState();
+    screenIndex = 0;
+    history = [];
+    mistakes = 0;
+    hintsUsed = 0;
+    startTime = Date.now();
+    document.getElementById("practice-title").textContent = def.emoji + " " + def.title + " 연습 중";
+    showView("view-practice");
+    renderScreen();
+  }
+
+  function goToScreen(nextIndex){
+    history.push(screenIndex);
+    screenIndex = nextIndex;
+    renderScreen();
+  }
+
+  var feedbackTimer = null;
+  function showFeedback(msg, ok){
+    var el = document.getElementById("feedback-toast");
+    el.textContent = msg;
+    el.classList.toggle("ok", !!ok);
+    el.classList.add("show");
+    clearTimeout(feedbackTimer);
+    feedbackTimer = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  }
+
+  function markMistake(el, msg){
+    mistakes++;
+    showFeedback(msg, false);
+    if(el){
+      el.classList.add("shake");
+      setTimeout(function(){ el.classList.remove("shake"); }, 350);
+    }
+  }
+
+  function renderScreen(){
+    var screen = currentScreens[screenIndex];
+    var root = document.getElementById("kiosk-screen");
+    root.innerHTML = screen.render();
+    screen.attach(root);
+
+    document.getElementById("btn-back").disabled = history.length === 0;
+    document.getElementById("progress-label").textContent = (screenIndex + 1) + "단계 / " + currentScreens.length + "단계";
+
+    var dotsWrap = document.getElementById("progress-dots");
+    dotsWrap.innerHTML = "";
+    currentScreens.forEach(function(s, i){
+      var dot = document.createElement("span");
+      dot.className = "dot" + (i < screenIndex ? " done" : "") + (i === screenIndex ? " current" : "");
+      dotsWrap.appendChild(dot);
+    });
+  }
+
+  function finishScenario(){
+    var elapsed = Math.round((Date.now() - startTime) / 1000);
+    var min = Math.floor(elapsed / 60);
+    var sec = elapsed % 60;
+    document.getElementById("stat-time").textContent = min + "분 " + sec + "초";
+    document.getElementById("stat-hints").textContent = hintsUsed + "회";
+    document.getElementById("stat-mistakes").textContent = mistakes + "회";
+    var scenarioTitle = scenarioDefs[currentScenarioId].title;
+    document.getElementById("summary-title").textContent = scenarioTitle + josa(scenarioTitle, "을", "를") + " 완료했어요!";
+    document.getElementById("btn-retry").textContent = scenarioDefs[currentScenarioId].emoji + " 다시 연습하기";
+
+    var nextId = scenarioDefs[currentScenarioId].nextScenario;
+    var nextBtn = document.getElementById("btn-next-scenario");
+    if(nextId && scenarioDefs[nextId]){
+      nextBtn.style.display = "";
+      nextBtn.textContent = scenarioDefs[nextId].emoji + " 이어서 " + scenarioDefs[nextId].title + " 연습하기";
+      nextBtn.onclick = function(){ startScenario(nextId); };
+    } else {
+      nextBtn.style.display = "none";
+      nextBtn.onclick = null;
+    }
+    showView("view-summary");
+  }
+
+  /* ============ 시나리오: 카페 ============ */
+  var cafeMenuData = {
+    coffee: [
+      {id:"americano", name:"아메리카노", price:"2,500원", emoji:"☕"},
+      {id:"latte", name:"카페라떼", price:"3,000원", emoji:"🥛"},
+      {id:"cappuccino", name:"카푸치노", price:"3,000원", emoji:"☕"},
+      {id:"vanilla", name:"바닐라라떼", price:"3,500원", emoji:"🍦"}
+    ],
+    nonc: [
+      {id:"ade", name:"자몽에이드", price:"3,800원", emoji:"🍊"},
+      {id:"smoothie", name:"딸기스무디", price:"4,200원", emoji:"🍓"}
+    ],
+    dessert: [
+      {id:"cake", name:"치즈케이크", price:"5,000원", emoji:"🍰"},
+      {id:"cookie", name:"초코쿠키", price:"2,000원", emoji:"🍪"}
+    ]
+  };
+  var cafeActiveTab = "coffee";
+
+  var cafeScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 주문을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 ☕</div>' +
+          '<div class="screen-sub">화면을 터치하여 주문을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 주문 방법 */
+    {
+      label:"주문 방법",
+      hint:"매장에서 드실지, 포장하실지 둘 중 하나를 선택하면 돼요. 어느 쪽을 눌러도 정답이에요.",
+      hintTargets:function(){ return [".choice-card"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">주문 방법을 선택해주세요</div>' +
+          '<div class="screen-sub">매장에서 드시나요, 포장해 가시나요?</div>' +
+          '<div class="choice-row">' +
+            '<div class="choice-card" id="act-dinein"><span class="emoji">🍽️</span>매장에서 먹고 갈게요</div>' +
+            '<div class="choice-card" id="act-takeout"><span class="emoji">🥤</span>포장할게요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-dinein"), function(){
+          state.orderType = "매장 식사"; goToScreen(2);
+        });
+        bindActivate(root.querySelector("#act-takeout"), function(){
+          state.orderType = "포장"; goToScreen(2);
+        });
+      }
+    },
+    /* 2. 메뉴 선택 */
+    {
+      label:"메뉴 선택",
+      hint:"위에서 '커피' 탭을 확인하고, 그 안에서 아메리카노를 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='americano']"]; },
+      render:function(){
+        var tabs = [["coffee","커피"],["nonc","논커피"],["dessert","디저트"]];
+        var tabsHtml = tabs.map(function(t){
+          return '<button class="tab-btn' + (cafeActiveTab === t[0] ? " active" : "") + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
+        }).join("");
+        var items = cafeMenuData[cafeActiveTab].map(function(m){
+          return (
+            '<div class="menu-card" data-menu="' + m.id + '" data-name="' + m.name + '">' +
+              '<span class="emoji">' + m.emoji + '</span>' +
+              '<div class="name">' + m.name + '</div>' +
+              '<div class="price">' + m.price + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">메뉴를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>아메리카노</b>를 찾아서 눌러보세요.</div>' +
+          '<div class="tabs">' + tabsHtml + '</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".tab-btn").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            cafeActiveTab = btn.getAttribute("data-tab");
+            renderScreen();
+          });
+        });
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "americano"){
+              state.menuItem = id; state.menuName = name;
+              goToScreen(3);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 아메리카노는 커피 탭에서 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 3. 옵션 선택 */
+    {
+      label:"옵션 선택",
+      hint:"ICE 버튼을 먼저 누른 다음, 아래 '담기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#opt-ice", "#act-add"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">' + state.menuName + ' 옵션을 골라주세요</div>' +
+          '<div class="screen-sub">온도를 <b>ICE</b>로 바꾼 후 담기 버튼을 눌러주세요.</div>' +
+          '<div class="option-block">' +
+            '<div class="option-label">온도</div>' +
+            '<div class="option-row">' +
+              '<button class="option-btn' + (state.temp === "HOT" ? " selected" : "") + '" id="opt-hot">HOT</button>' +
+              '<button class="option-btn' + (state.temp === "ICE" ? " selected" : "") + '" id="opt-ice">ICE</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="option-block">' +
+            '<div class="option-label">사이즈</div>' +
+            '<div class="option-row">' +
+              '<button class="option-btn' + (state.size === "Tall" ? " selected" : "") + '" data-size="Tall">Tall</button>' +
+              '<button class="option-btn' + (state.size === "Grande" ? " selected" : "") + '" data-size="Grande">Grande</button>' +
+              '<button class="option-btn' + (state.size === "Venti" ? " selected" : "") + '" data-size="Venti">Venti</button>' +
+            '</div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-add">🛒 담기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#opt-hot").addEventListener("click", function(){ state.temp = "HOT"; renderScreen(); });
+        root.querySelector("#opt-ice").addEventListener("click", function(){ state.temp = "ICE"; renderScreen(); });
+        root.querySelectorAll("[data-size]").forEach(function(btn){
+          btn.addEventListener("click", function(){ state.size = btn.getAttribute("data-size"); renderScreen(); });
+        });
+        root.querySelector("#act-add").addEventListener("click", function(){
+          if(state.temp !== "ICE"){
+            markMistake(root.querySelector("#act-add"), "잠깐! 아직 ICE로 바꾸지 않으셨어요. 온도를 먼저 선택해주세요.");
+          } else {
+            goToScreen(4);
+          }
+        });
+      }
+    },
+    /* 4. 장바구니 확인 */
+    {
+      label:"장바구니 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">주문 내용을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">메뉴</span><span>' + state.menuName + '</span></div>' +
+            '<div class="cart-row"><span class="label">온도</span><span>' + state.temp + '</span></div>' +
+            '<div class="cart-row"><span class="label">사이즈</span><span>' + state.size + '</span></div>' +
+            '<div class="cart-row"><span class="label">주문 방법</span><span>' + state.orderType + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>' +
+          '<button class="ghost-btn" id="act-addmore">+ 추가 주문하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(5); });
+        root.querySelector("#act-addmore").addEventListener("click", function(){
+          showFeedback("이번 연습에서는 한 가지만 주문해볼게요. 결제하기를 눌러주세요.", false);
+        });
+      }
+    },
+    /* 5. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '카드' 결제를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='card']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>카드</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "card"){
+              state.payment = "카드"; goToScreen(6);
+            } else {
+              var label = type === "cash" ? "현금" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 카드 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 6. 카드 결제 진행 */
+    {
+      label:"카드 결제",
+      hint:"카드 그림을 눌러서 카드를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 넣어주세요</div>' +
+          '<div class="screen-sub">카드 투입구에 카드를 넣는 것처럼 아래 카드를 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💳</div>' +
+            '<div class="status-text" id="pay-status">카드를 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "결제 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(7); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 7. 완료 */
+    {
+      label:"주문 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        var num = 30 + (Math.abs((state.menuName || "").length * 7) % 60);
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">✅</div>' +
+            '<div class="screen-title">주문이 완료되었어요!</div>' +
+            '<div class="screen-sub">번호가 호출되면 픽업대에서 받아주세요.</div>' +
+            '<div class="order-number">대기번호 ' + num + '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.cafe = {
+    title:"카페 주문",
+    emoji:"☕",
+    screens: cafeScreens,
+    initialState:function(){
+      cafeActiveTab = "coffee";
+      return { orderType:null, temp:"HOT", size:"Tall", menuItem:null, menuName:null, payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 음식점 ============ */
+  var dishData = {
+    meal: [
+      {id:"kimchi-jjigae", name:"김치찌개", price:"8,000원", emoji:"🍲"},
+      {id:"doenjang-jjigae", name:"된장찌개", price:"8,000원", emoji:"🍲"},
+      {id:"bibimbap", name:"비빔밥", price:"9,000원", emoji:"🍚"},
+      {id:"bulgogi", name:"불고기 백반", price:"11,000원", emoji:"🥘"}
+    ],
+    side: [
+      {id:"gyeranmari", name:"계란말이", price:"5,000원", emoji:"🍳"},
+      {id:"pajeon", name:"파전", price:"9,000원", emoji:"🥞"}
+    ],
+    drink: [
+      {id:"cola", name:"콜라", price:"2,000원", emoji:"🥤"},
+      {id:"sikhye", name:"식혜", price:"2,500원", emoji:"🧃"}
+    ]
+  };
+  var restaurantActiveTab = "meal";
+
+  var restaurantScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 주문을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 🍽️</div>' +
+          '<div class="screen-sub">화면을 터치하여 주문을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 인원수 선택 */
+    {
+      label:"인원수",
+      hint:"인원수 중 아무거나 선택하면 돼요. 원하는 인원수를 눌러주세요.",
+      hintTargets:function(){ return [".people-card"]; },
+      render:function(){
+        var options = [["1명","🧍"],["2명","🧍🧍"],["3명","🧍🧍🧍"],["4명 이상","👨‍👩‍👧‍👦"]];
+        var html = options.map(function(o){
+          return '<div class="people-card" data-people="' + o[0] + '"><span class="emoji">' + o[1] + '</span>' + o[0] + '</div>';
+        }).join("");
+        return (
+          '<div class="screen-title">몇 분이세요?</div>' +
+          '<div class="screen-sub">인원수를 선택해주세요.</div>' +
+          '<div class="people-row">' + html + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".people-card").forEach(function(card){
+          bindActivate(card, function(){
+            state.peopleCount = card.getAttribute("data-people");
+            goToScreen(2);
+          });
+        });
+      }
+    },
+    /* 2. 메뉴 선택 */
+    {
+      label:"메뉴 선택",
+      hint:"위에서 '식사' 탭을 확인하고, 그 안에서 김치찌개를 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='kimchi-jjigae']"]; },
+      render:function(){
+        var tabs = [["meal","식사"],["side","사이드"],["drink","음료"]];
+        var tabsHtml = tabs.map(function(t){
+          return '<button class="tab-btn' + (restaurantActiveTab === t[0] ? " active" : "") + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
+        }).join("");
+        var items = dishData[restaurantActiveTab].map(function(m){
+          return (
+            '<div class="menu-card" data-menu="' + m.id + '" data-name="' + m.name + '">' +
+              '<span class="emoji">' + m.emoji + '</span>' +
+              '<div class="name">' + m.name + '</div>' +
+              '<div class="price">' + m.price + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">메뉴를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>김치찌개</b>를 찾아서 눌러보세요.</div>' +
+          '<div class="tabs">' + tabsHtml + '</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".tab-btn").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            restaurantActiveTab = btn.getAttribute("data-tab");
+            renderScreen();
+          });
+        });
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "kimchi-jjigae"){
+              state.dishId = id; state.dishName = name;
+              goToScreen(3);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 김치찌개는 식사 탭에서 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 3. 수량 선택 */
+    {
+      label:"수량 선택",
+      hint:"+ 버튼을 눌러 수량을 2인분으로 늘린 다음, 담기 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#qty-plus", "#act-add"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">' + state.dishName + ' 수량을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>2인분</b>으로 늘린 후 담기 버튼을 눌러주세요.</div>' +
+          '<div class="qty-stepper">' +
+            '<button class="qty-btn" id="qty-minus">−</button>' +
+            '<div class="qty-num">' + state.qty + '인분</div>' +
+            '<button class="qty-btn" id="qty-plus">+</button>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-add">🛒 담기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#qty-minus").addEventListener("click", function(){
+          state.qty = Math.max(1, state.qty - 1); renderScreen();
+        });
+        root.querySelector("#qty-plus").addEventListener("click", function(){
+          state.qty = Math.min(9, state.qty + 1); renderScreen();
+        });
+        root.querySelector("#act-add").addEventListener("click", function(){
+          if(state.qty !== 2){
+            markMistake(root.querySelector("#act-add"), "수량을 2인분으로 늘린 후 담아주세요.");
+          } else {
+            goToScreen(4);
+          }
+        });
+      }
+    },
+    /* 4. 장바구니 확인 */
+    {
+      label:"장바구니 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">주문 내용을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">메뉴</span><span>' + state.dishName + '</span></div>' +
+            '<div class="cart-row"><span class="label">수량</span><span>' + state.qty + '인분</span></div>' +
+            '<div class="cart-row"><span class="label">인원수</span><span>' + state.peopleCount + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>' +
+          '<button class="ghost-btn" id="act-addmore">+ 추가 주문하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(5); });
+        root.querySelector("#act-addmore").addEventListener("click", function(){
+          showFeedback("이번 연습에서는 한 가지만 주문해볼게요. 결제하기를 눌러주세요.", false);
+        });
+      }
+    },
+    /* 5. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '현금' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='cash']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>현금</b>으로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "cash"){
+              state.payment = "현금"; goToScreen(6);
+            } else {
+              var label = type === "card" ? "카드" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 현금 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 6. 현금 결제 진행 */
+    {
+      label:"현금 결제",
+      hint:"현금 그림을 눌러서 지폐를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">현금을 넣어주세요</div>' +
+          '<div class="screen-sub">지폐 투입구에 현금을 넣는 것처럼 아래 그림을 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💵</div>' +
+            '<div class="status-text" id="pay-status">현금을 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "확인 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "거스름돈 500원을 받아주세요 ✅";
+            setTimeout(function(){ goToScreen(7); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 7. 완료 */
+    {
+      label:"주문 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        var num = 1 + (Math.abs((state.dishName || "").length * 3) % 20);
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">✅</div>' +
+            '<div class="screen-title">주문이 접수되었어요!</div>' +
+            '<div class="screen-sub">음식이 준비되면 진동벨이 울려요.</div>' +
+            '<div class="order-number">진동벨 ' + num + '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.restaurant = {
+    title:"음식점 주문",
+    emoji:"🍽️",
+    screens: restaurantScreens,
+    initialState:function(){
+      restaurantActiveTab = "meal";
+      return { peopleCount:null, dishId:null, dishName:null, qty:1, payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 마트 ============ */
+  var martProducts = [
+    {id:"apple", name:"사과", price:2000, emoji:"🍎"},
+    {id:"milk", name:"우유", price:2500, emoji:"🥛"},
+    {id:"ramen", name:"라면", price:1200, emoji:"🍜"}
+  ];
+
+  function martTotal(){
+    return martProducts
+      .filter(function(p){ return state.scanned.indexOf(p.id) !== -1; })
+      .reduce(function(sum, p){ return sum + p.price; }, 0);
+  }
+  function formatWon(n){
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "원";
+  }
+
+  var martScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 계산을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">셀프계산대입니다 🛒</div>' +
+          '<div class="screen-sub">화면을 터치하여 계산을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 상품 스캔 */
+    {
+      label:"상품 스캔",
+      hint:"아직 스캔하지 않은 상품을 눌러서 스캔해보세요. 3개를 모두 스캔해야 해요.",
+      hintTargets:function(){ return [".menu-card:not(.scanned)"]; },
+      render:function(){
+        var items = martProducts.map(function(p){
+          var isScanned = state.scanned.indexOf(p.id) !== -1;
+          return (
+            '<div class="menu-card' + (isScanned ? " scanned" : "") + '" data-item="' + p.id + '" data-name="' + p.name + '">' +
+              '<span class="emoji">' + p.emoji + '</span>' +
+              '<div class="name">' + p.name + '</div>' +
+              '<div class="price">' + formatWon(p.price) + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">상품을 스캔해주세요</div>' +
+          '<div class="screen-sub">장바구니에 담은 상품 3개를 모두 눌러서 스캔해주세요.</div>' +
+          '<div class="menu-grid">' + items + '</div>' +
+          '<div class="scan-total">합계: ' + formatWon(martTotal()) + '</div>' +
+          '<button class="confirm-btn" id="act-scan-done">✅ 스캔 완료</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-item");
+            var name = card.getAttribute("data-name");
+            if(state.scanned.indexOf(id) === -1){
+              state.scanned.push(id);
+              renderScreen();
+            } else {
+              showFeedback(name + ", 이미 스캔했어요! 다른 상품도 스캔해볼까요?", true);
+            }
+          });
+        });
+        root.querySelector("#act-scan-done").addEventListener("click", function(){
+          var remaining = martProducts.filter(function(p){ return state.scanned.indexOf(p.id) === -1; });
+          if(remaining.length > 0){
+            var names = remaining.map(function(p){ return p.name; }).join(", ");
+            markMistake(root.querySelector("#act-scan-done"), "아직 스캔하지 않은 상품이 있어요: " + names);
+          } else {
+            goToScreen(2);
+          }
+        });
+      }
+    },
+    /* 2. 봉투 선택 */
+    {
+      label:"봉투 선택",
+      hint:"봉투가 필요한지 아닌지 둘 중 하나를 선택하면 돼요. 어느 쪽을 눌러도 정답이에요.",
+      hintTargets:function(){ return [".choice-card"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">봉투가 필요하신가요?</div>' +
+          '<div class="screen-sub">필요하신 쪽을 선택해주세요.</div>' +
+          '<div class="choice-row">' +
+            '<div class="choice-card" id="act-bag-yes"><span class="emoji">🛍️</span>봉투 필요해요</div>' +
+            '<div class="choice-card" id="act-bag-no"><span class="emoji">🙅</span>괜찮아요, 가져왔어요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-bag-yes"), function(){
+          state.bag = "필요"; goToScreen(3);
+        });
+        bindActivate(root.querySelector("#act-bag-no"), function(){
+          state.bag = "필요 없음"; goToScreen(3);
+        });
+      }
+    },
+    /* 3. 회원 적립 */
+    {
+      label:"회원 적립",
+      hint:"회원카드가 있으면 '있어요'를, 없으면 '다음에 할게요'를 눌러주세요. 둘 다 정답이에요.",
+      hintTargets:function(){ return [".choice-card"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">회원 적립을 하시겠어요?</div>' +
+          '<div class="screen-sub">해당하는 쪽을 선택해주세요.</div>' +
+          '<div class="choice-row">' +
+            '<div class="choice-card" id="act-member-yes"><span class="emoji">💳</span>회원카드 있어요</div>' +
+            '<div class="choice-card" id="act-member-no"><span class="emoji">➡️</span>괜찮아요, 다음에 할게요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-member-yes"), function(){
+          state.membership = "적립함"; goToScreen(4);
+        });
+        bindActivate(root.querySelector("#act-member-no"), function(){
+          state.membership = "적립 안 함"; goToScreen(4);
+        });
+      }
+    },
+    /* 4. 합계 확인 */
+    {
+      label:"합계 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        var itemNames = martProducts.map(function(p){ return p.name; }).join(", ");
+        return (
+          '<div class="screen-title">결제 금액을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">상품</span><span>' + itemNames + '</span></div>' +
+            '<div class="cart-row"><span class="label">봉투</span><span>' + state.bag + '</span></div>' +
+            '<div class="cart-row"><span class="label">회원 적립</span><span>' + state.membership + '</span></div>' +
+            '<div class="cart-row"><span class="label">합계</span><span>' + formatWon(martTotal()) + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(5); });
+      }
+    },
+    /* 5. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '모바일페이'를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='mobile']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>모바일페이</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "mobile"){
+              state.payment = "모바일페이"; goToScreen(6);
+            } else {
+              var label = type === "card" ? "카드" : "현금";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 모바일페이 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 6. 모바일페이 결제 진행 */
+    {
+      label:"모바일페이 결제",
+      hint:"휴대폰 그림을 눌러서 스캐너에 대는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">휴대폰을 스캐너에 대주세요</div>' +
+          '<div class="screen-sub">결제 화면을 켠 휴대폰을 스캐너에 대는 것처럼 아래 그림을 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">📱</div>' +
+            '<div class="status-text" id="pay-status">휴대폰을 대주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "인식 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(7); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 7. 완료 */
+    {
+      label:"결제 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🧾</div>' +
+            '<div class="screen-title">결제가 완료되었어요!</div>' +
+            '<div class="screen-sub">영수증이 출력되고 있어요. 안녕히 가세요!</div>' +
+            '<div class="order-number">' + formatWon(martTotal()) + ' 결제 완료</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.mart = {
+    title:"마트 셀프계산",
+    emoji:"🛒",
+    screens: martScreens,
+    initialState:function(){
+      return { scanned:[], bag:null, membership:null, payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 병원 ============ */
+  var deptData = [
+    {id:"internal", name:"내과", emoji:"🩺"},
+    {id:"ortho", name:"정형외과", emoji:"🦴"},
+    {id:"ent", name:"이비인후과", emoji:"👂"},
+    {id:"derma", name:"피부과", emoji:"🧴"},
+    {id:"eye", name:"안과", emoji:"👁️"},
+    {id:"dental", name:"치과", emoji:"🦷"}
+  ];
+
+  var hospitalScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 접수를 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 🏥</div>' +
+          '<div class="screen-sub">화면을 터치하여 접수를 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 접수 유형 */
+    {
+      label:"접수 유형",
+      hint:"처음 오셨는지 아닌지에 맞게 선택하면 돼요. 둘 다 정답이에요.",
+      hintTargets:function(){ return [".choice-card"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">어떤 접수를 도와드릴까요?</div>' +
+          '<div class="screen-sub">해당하는 쪽을 선택해주세요.</div>' +
+          '<div class="choice-row">' +
+            '<div class="choice-card" id="act-first"><span class="emoji">🆕</span>처음 방문이에요</div>' +
+            '<div class="choice-card" id="act-revisit"><span class="emoji">🔁</span>전에도 왔었어요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-first"), function(){
+          state.visitType = "초진"; goToScreen(2);
+        });
+        bindActivate(root.querySelector("#act-revisit"), function(){
+          state.visitType = "재진"; goToScreen(2);
+        });
+      }
+    },
+    /* 2. 진료과 선택 */
+    {
+      label:"진료과 선택",
+      hint:"여러 진료과 중에서 내과를 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='internal']"]; },
+      render:function(){
+        var items = deptData.map(function(d){
+          return (
+            '<div class="menu-card" data-menu="' + d.id + '" data-name="' + d.name + '">' +
+              '<span class="emoji">' + d.emoji + '</span>' +
+              '<div class="name">' + d.name + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">진료과를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>내과</b>를 찾아서 눌러보세요.</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "internal"){
+              state.deptId = id; state.deptName = name;
+              goToScreen(3);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 내과를 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 3. 본인 확인 (전화번호 뒤 4자리 입력) */
+    {
+      label:"본인 확인",
+      hint:"숫자 버튼을 4번 눌러 전화번호 뒤 4자리를 입력한 다음, '확인' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-confirm"]; },
+      render:function(){
+        var digits = state.phoneDigits;
+        var boxes = "";
+        for(var i = 0; i < 4; i++){
+          var d = digits.charAt(i);
+          boxes += '<div class="keypad-digit' + (d ? " filled" : "") + '">' + (d || "") + '</div>';
+        }
+        var nums = [1,2,3,4,5,6,7,8,9].map(function(n){
+          return '<button class="keypad-btn" data-digit="' + n + '">' + n + '</button>';
+        }).join("");
+        return (
+          '<div class="screen-title">본인 확인을 해주세요</div>' +
+          '<div class="screen-sub">전화번호 뒤 4자리를 입력해주세요.</div>' +
+          '<div class="keypad-display">' + boxes + '</div>' +
+          '<div class="keypad-grid">' +
+            nums +
+            '<button class="keypad-btn wide" id="act-backspace">지우기</button>' +
+            '<button class="keypad-btn" data-digit="0">0</button>' +
+            '<button class="keypad-btn wide" id="act-confirm">확인</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-digit]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            if(state.phoneDigits.length < 4){
+              state.phoneDigits += btn.getAttribute("data-digit");
+              renderScreen();
+            }
+          });
+        });
+        root.querySelector("#act-backspace").addEventListener("click", function(){
+          state.phoneDigits = state.phoneDigits.slice(0, -1);
+          renderScreen();
+        });
+        root.querySelector("#act-confirm").addEventListener("click", function(){
+          if(state.phoneDigits.length !== 4){
+            markMistake(root.querySelector("#act-confirm"), "전화번호 뒤 4자리를 모두 입력해주세요. 지금은 " + state.phoneDigits.length + "자리만 입력하셨어요.");
+          } else {
+            goToScreen(4);
+          }
+        });
+      }
+    },
+    /* 4. 접수 내용 확인 */
+    {
+      label:"접수 확인",
+      hint:"내용을 확인했으면 초록색 '접수하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">접수 내용을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">접수 유형</span><span>' + state.visitType + '</span></div>' +
+            '<div class="cart-row"><span class="label">진료과</span><span>' + state.deptName + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">🏥 접수하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(5); });
+      }
+    },
+    /* 5. 완료 */
+    {
+      label:"접수 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        var num = 5 + (Math.abs((state.deptName || "").length * 4) % 30);
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">✅</div>' +
+            '<div class="screen-title">접수가 완료되었어요!</div>' +
+            '<div class="screen-sub">' + state.deptName + ' 앞에서 번호가 호출될 때까지 기다려주세요.</div>' +
+            '<div class="order-number">대기번호 ' + num + '번</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.hospital = {
+    title:"병원 접수",
+    emoji:"🏥",
+    screens: hospitalScreens,
+    nextScenario:"hospitalPay",
+    initialState:function(){
+      return { visitType:null, deptId:null, deptName:null, phoneDigits:"" };
+    }
+  };
+
+  /* ============ 시나리오: 병원 수납·처방전 (접수 다음 단계, 허브에는 노출하지 않음) ============ */
+  var hospitalPayItems = [
+    {name:"진찰료", price:15000},
+    {name:"검사비", price:8000}
+  ];
+  function hospitalPayTotal(){
+    return hospitalPayItems.reduce(function(sum, i){ return sum + i.price; }, 0);
+  }
+
+  var hospitalPayScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 수납을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">진료비 수납 🧾</div>' +
+          '<div class="screen-sub">진료가 끝나셨나요? 화면을 터치하여 수납을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 본인 확인 (전화번호 뒤 4자리 입력) */
+    {
+      label:"본인 확인",
+      hint:"숫자 버튼을 4번 눌러 전화번호 뒤 4자리를 입력한 다음, '확인' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-confirm"]; },
+      render:function(){
+        var digits = state.phoneDigits;
+        var boxes = "";
+        for(var i = 0; i < 4; i++){
+          var d = digits.charAt(i);
+          boxes += '<div class="keypad-digit' + (d ? " filled" : "") + '">' + (d || "") + '</div>';
+        }
+        var nums = [1,2,3,4,5,6,7,8,9].map(function(n){
+          return '<button class="keypad-btn" data-digit="' + n + '">' + n + '</button>';
+        }).join("");
+        return (
+          '<div class="screen-title">본인 확인을 해주세요</div>' +
+          '<div class="screen-sub">전화번호 뒤 4자리를 입력해주세요.</div>' +
+          '<div class="keypad-display">' + boxes + '</div>' +
+          '<div class="keypad-grid">' +
+            nums +
+            '<button class="keypad-btn wide" id="act-backspace">지우기</button>' +
+            '<button class="keypad-btn" data-digit="0">0</button>' +
+            '<button class="keypad-btn wide" id="act-confirm">확인</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-digit]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            if(state.phoneDigits.length < 4){
+              state.phoneDigits += btn.getAttribute("data-digit");
+              renderScreen();
+            }
+          });
+        });
+        root.querySelector("#act-backspace").addEventListener("click", function(){
+          state.phoneDigits = state.phoneDigits.slice(0, -1);
+          renderScreen();
+        });
+        root.querySelector("#act-confirm").addEventListener("click", function(){
+          if(state.phoneDigits.length !== 4){
+            markMistake(root.querySelector("#act-confirm"), "전화번호 뒤 4자리를 모두 입력해주세요. 지금은 " + state.phoneDigits.length + "자리만 입력하셨어요.");
+          } else {
+            goToScreen(2);
+          }
+        });
+      }
+    },
+    /* 2. 진료비 확인 */
+    {
+      label:"진료비 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        var rows = hospitalPayItems.map(function(i){
+          return '<div class="cart-row"><span class="label">' + i.name + '</span><span>' + formatWon(i.price) + '</span></div>';
+        }).join("");
+        return (
+          '<div class="screen-title">진료비를 확인해주세요</div>' +
+          '<div class="cart-box">' + rows +
+            '<div class="cart-row"><span class="label">본인부담금 합계</span><span>' + formatWon(hospitalPayTotal()) + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(3); });
+      }
+    },
+    /* 3. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '카드' 결제를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='card']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>카드</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "card"){
+              state.payment = "카드"; goToScreen(4);
+            } else {
+              var label = type === "cash" ? "현금" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 카드 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 4. 카드 결제 진행 */
+    {
+      label:"카드 결제",
+      hint:"카드 그림을 눌러서 카드를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 넣어주세요</div>' +
+          '<div class="screen-sub">카드 투입구에 카드를 넣는 것처럼 아래 카드를 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💳</div>' +
+            '<div class="status-text" id="pay-status">카드를 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "결제 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(5); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 5. 처방전 발급 여부 */
+    {
+      label:"처방전 발급",
+      hint:"처방전이 있어야 약국에서 약을 받을 수 있어요. '예, 처방전 받을게요'를 눌러주세요.",
+      hintTargets:function(){ return ["#act-rx-yes"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">처방전을 발급받으시겠어요?</div>' +
+          '<div class="screen-sub">약국에서 약을 받으시려면 처방전이 필요해요.</div>' +
+          '<div class="choice-row">' +
+            '<div class="choice-card" id="act-rx-yes"><span class="emoji">📄</span>예, 처방전 받을게요</div>' +
+            '<div class="choice-card" id="act-rx-no"><span class="emoji">🚫</span>아니요, 필요 없어요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-rx-yes"), function(){
+          state.prescription = true; goToScreen(6);
+        });
+        bindActivate(root.querySelector("#act-rx-no"), function(){
+          markMistake(root.querySelector("#act-rx-no"), "처방전이 있어야 약국에서 약을 받을 수 있어요. '예, 처방전 받을게요'를 눌러주세요.");
+        });
+      }
+    },
+    /* 6. 완료 */
+    {
+      label:"수납 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🧾</div>' +
+            '<div class="screen-title">수납이 완료되었어요!</div>' +
+            '<div class="screen-sub">처방전이 출력되고 있어요. 처방전을 가지고 약국을 방문해서 약을 받아주세요.</div>' +
+            '<div class="ticket-box">' +
+              '<div class="cart-row"><span class="label">결제 금액</span><span>' + formatWon(hospitalPayTotal()) + '</span></div>' +
+              '<div class="cart-row"><span class="label">처방전</span><span>발급됨</span></div>' +
+            '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.hospitalPay = {
+    title:"진료비 수납",
+    emoji:"🧾",
+    screens: hospitalPayScreens,
+    initialState:function(){
+      return { phoneDigits:"", payment:null, prescription:null };
+    }
+  };
+
+  /* ============ 시나리오: 무인가게 ============ */
+  var storeItems = {
+    icecream: [
+      {id:"melona", name:"메로나", price:1000, emoji:"🍦"},
+      {id:"screwbar", name:"스크류바", price:1000, emoji:"🍭"}
+    ],
+    snack: [
+      {id:"chip", name:"감자칩", price:1500, emoji:"🍟"},
+      {id:"choco", name:"초코과자", price:1800, emoji:"🍫"}
+    ],
+    drink: [
+      {id:"cola", name:"콜라", price:1800, emoji:"🥤"},
+      {id:"water", name:"생수", price:800, emoji:"💧"}
+    ]
+  };
+  var storeActiveTab = "icecream";
+  var storePickOrder = [
+    {id:"melona", name:"메로나"},
+    {id:"cola", name:"콜라"}
+  ];
+
+  function storeTotal(){
+    return state.cart.reduce(function(sum, item){ return sum + item.price; }, 0);
+  }
+
+  var storeScreens = [
+    /* 0. 입장 */
+    {
+      label:"입장",
+      hint:"카드 그림을 눌러서 태그하는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 태그해서 입장해주세요</div>' +
+          '<div class="screen-sub">문 앞 리더기에 카드를 대는 것처럼 아래 그림을 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💳</div>' +
+            '<div class="status-text" id="pay-status">카드를 태그해주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "인증 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "문이 열렸습니다! 들어오세요 🚪";
+            setTimeout(function(){ goToScreen(1); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 1. 상품 선택 (두 번 반복) */
+    {
+      label:"상품 선택",
+      hint:function(){
+        var target = storePickOrder[state.cart.length];
+        return "여러 상품 중에서 " + target.name + "를 찾아 눌러주세요.";
+      },
+      hintTargets:function(){
+        var target = storePickOrder[state.cart.length];
+        return ["[data-item='" + target.id + "']"];
+      },
+      render:function(){
+        var target = storePickOrder[state.cart.length];
+        var tabs = [["icecream","아이스크림"],["snack","과자"],["drink","음료"]];
+        var tabsHtml = tabs.map(function(t){
+          return '<button class="tab-btn' + (storeActiveTab === t[0] ? " active" : "") + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
+        }).join("");
+        var items = storeItems[storeActiveTab].map(function(p){
+          return (
+            '<div class="menu-card" data-item="' + p.id + '" data-name="' + p.name + '">' +
+              '<span class="emoji">' + p.emoji + '</span>' +
+              '<div class="name">' + p.name + '</div>' +
+              '<div class="price">' + formatWon(p.price) + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">상품을 골라주세요</div>' +
+          '<div class="screen-sub"><b>' + target.name + '</b>' + josa(target.name, "을", "를") + ' 찾아서 눌러보세요.</div>' +
+          '<div class="tabs">' + tabsHtml + '</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".tab-btn").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            storeActiveTab = btn.getAttribute("data-tab");
+            renderScreen();
+          });
+        });
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-item");
+            var name = card.getAttribute("data-name");
+            var target = storePickOrder[state.cart.length];
+            if(id === target.id){
+              var allItems = storeItems.icecream.concat(storeItems.snack, storeItems.drink);
+              var picked = allItems.filter(function(p){ return p.id === id; })[0];
+              state.cart.push(picked);
+              goToScreen(2);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". " + target.name + "를 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 2. 더 담을지 확인 */
+    {
+      label:"추가 담기",
+      hint:"장바구니를 더 채울지, 계산하러 갈지 선택하면 돼요.",
+      hintTargets:function(){ return state.cart.length < 2 ? [".choice-card"] : ["#act-go-pay"]; },
+      render:function(){
+        if(state.cart.length < 2){
+          return (
+            '<div class="screen-title">' + state.cart[state.cart.length - 1].name + ' 담았어요!</div>' +
+            '<div class="screen-sub">다른 상품도 담으시겠어요?</div>' +
+            '<div class="choice-row">' +
+              '<div class="choice-card" id="act-more"><span class="emoji">➕</span>네, 하나 더 담을게요</div>' +
+              '<div class="choice-card" id="act-nomore"><span class="emoji">🧾</span>아니요, 계산할게요</div>' +
+            '</div>'
+          );
+        }
+        return (
+          '<div class="screen-title">장바구니를 다 채우셨어요!</div>' +
+          '<div class="screen-sub">이제 계산하러 가볼까요?</div>' +
+          '<button class="big-tap-btn" id="act-go-pay"><span class="emoji">🧾</span>계산하러 가기</button>'
+        );
+      },
+      attach:function(root){
+        if(state.cart.length < 2){
+          bindActivate(root.querySelector("#act-more"), function(){ goToScreen(1); });
+          bindActivate(root.querySelector("#act-nomore"), function(){ goToScreen(3); });
+        } else {
+          root.querySelector("#act-go-pay").addEventListener("click", function(){ goToScreen(3); });
+        }
+      }
+    },
+    /* 3. 결제 확인 */
+    {
+      label:"결제 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        var rows = state.cart.map(function(item){
+          return '<div class="cart-row"><span class="label">' + item.name + '</span><span>' + formatWon(item.price) + '</span></div>';
+        }).join("");
+        return (
+          '<div class="screen-title">결제 금액을 확인해주세요</div>' +
+          '<div class="cart-box">' + rows +
+            '<div class="cart-row"><span class="label">합계</span><span>' + formatWon(storeTotal()) + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(4); });
+      }
+    },
+    /* 4. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '카드' 결제를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='card']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>카드</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "card"){
+              state.payment = "카드"; goToScreen(5);
+            } else {
+              var label = type === "cash" ? "현금" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 카드 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 5. 카드 결제 진행 */
+    {
+      label:"카드 결제",
+      hint:"카드 그림을 눌러서 카드를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert2"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 넣어주세요</div>' +
+          '<div class="screen-sub">카드 투입구에 카드를 넣는 것처럼 아래 카드를 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert2">💳</div>' +
+            '<div class="status-text" id="pay-status2">카드를 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert2"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert2");
+          var status = root.querySelector("#pay-status2");
+          slot.classList.add("inserting");
+          status.textContent = "결제 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(6); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 6. 완료 */
+    {
+      label:"결제 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🚪</div>' +
+            '<div class="screen-title">결제가 완료되었어요!</div>' +
+            '<div class="screen-sub">문이 자동으로 열립니다. 안녕히 가세요!</div>' +
+            '<div class="order-number">' + formatWon(storeTotal()) + ' 결제 완료</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.store = {
+    title:"무인가게 쇼핑",
+    emoji:"🏪",
+    screens: storeScreens,
+    initialState:function(){
+      storeActiveTab = "icecream";
+      return { cart:[], payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 패스트푸드 ============ */
+  var fastfoodMenuData = {
+    burger: [
+      {id:"bulgogi-burger", name:"불고기버거", price:5500, emoji:"🍔"},
+      {id:"cheese-burger", name:"치즈버거", price:5000, emoji:"🍔"}
+    ],
+    chicken: [
+      {id:"chicken-tender", name:"치킨텐더", price:6000, emoji:"🍗"}
+    ],
+    side: [
+      {id:"fries", name:"감자튀김", price:2500, emoji:"🍟"},
+      {id:"nugget", name:"너겟", price:3000, emoji:"🍗"}
+    ]
+  };
+  var fastfoodActiveTab = "burger";
+
+  function fastfoodTotal(){
+    if(!state.itemPrice) return 0;
+    return state.itemPrice + (state.isSet ? 1500 : 0);
+  }
+
+  var fastfoodScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 주문을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 🍔</div>' +
+          '<div class="screen-sub">화면을 터치하여 주문을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 메뉴 선택 */
+    {
+      label:"메뉴 선택",
+      hint:"위에서 '버거' 탭을 확인하고, 그 안에서 불고기버거를 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='bulgogi-burger']"]; },
+      render:function(){
+        var tabs = [["burger","버거"],["chicken","치킨"],["side","사이드"]];
+        var tabsHtml = tabs.map(function(t){
+          return '<button class="tab-btn' + (fastfoodActiveTab === t[0] ? " active" : "") + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
+        }).join("");
+        var items = fastfoodMenuData[fastfoodActiveTab].map(function(m){
+          return (
+            '<div class="menu-card" data-menu="' + m.id + '" data-name="' + m.name + '" data-price="' + m.price + '">' +
+              '<span class="emoji">' + m.emoji + '</span>' +
+              '<div class="name">' + m.name + '</div>' +
+              '<div class="price">' + formatWon(m.price) + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">메뉴를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>불고기버거</b>를 찾아서 눌러보세요.</div>' +
+          '<div class="tabs">' + tabsHtml + '</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".tab-btn").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            fastfoodActiveTab = btn.getAttribute("data-tab");
+            renderScreen();
+          });
+        });
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "bulgogi-burger"){
+              state.itemId = id; state.itemName = name; state.itemPrice = Number(card.getAttribute("data-price"));
+              goToScreen(2);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 불고기버거를 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 2. 세트 업그레이드 */
+    {
+      label:"세트 선택",
+      hint:"토글 스위치를 눌러 세트로 바꾼 다음, 담기 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-toggle", "#act-add"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">' + state.itemName + ' 세트로 변경하시겠어요?</div>' +
+          '<div class="screen-sub">토글을 켜면 감자튀김과 음료가 추가돼요 (+1,500원).</div>' +
+          '<div class="toggle-row">' +
+            '<span class="toggle-label">세트로 변경</span>' +
+            '<div class="toggle-switch' + (state.isSet ? " on" : "") + '" id="act-toggle"><div class="toggle-knob"></div></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-add">🛒 담기</button>'
+        );
+      },
+      attach:function(root){
+        bindActivate(root.querySelector("#act-toggle"), function(){
+          state.isSet = !state.isSet;
+          renderScreen();
+        });
+        root.querySelector("#act-add").addEventListener("click", function(){
+          if(!state.isSet){
+            markMistake(root.querySelector("#act-add"), "아직 세트로 변경하지 않으셨어요. 토글을 켜서 세트로 바꿔주세요.");
+          } else {
+            goToScreen(3);
+          }
+        });
+      }
+    },
+    /* 3. 장바구니 확인 */
+    {
+      label:"장바구니 확인",
+      hint:"휴지통 버튼은 잘못 담았을 때 쓰는 거예요. 이번엔 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">주문 내용을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row-item">' +
+              '<div class="info"><span class="label">' + state.itemName + '</span><span>' + formatWon(state.itemPrice) + '</span></div>' +
+              '<button class="delete-btn" id="act-delete" title="삭제">🗑️</button>' +
+            '</div>' +
+            '<div class="cart-row"><span class="label">구성</span><span>' + (state.isSet ? "세트 (+1,500원)" : "단품") + '</span></div>' +
+            '<div class="cart-row"><span class="label">합계</span><span>' + formatWon(fastfoodTotal()) + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-delete").addEventListener("click", function(){
+          showFeedback("삭제 버튼은 상품을 잘못 담았을 때 눌러요! 이번엔 이대로 결제해볼까요?", true);
+        });
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(4); });
+      }
+    },
+    /* 4. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '카드' 결제를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='card']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>카드</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "card"){
+              state.payment = "카드"; goToScreen(5);
+            } else {
+              var label = type === "cash" ? "현금" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 카드 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 5. 카드 결제 진행 */
+    {
+      label:"카드 결제",
+      hint:"카드 그림을 눌러서 카드를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 넣어주세요</div>' +
+          '<div class="screen-sub">카드 투입구에 카드를 넣는 것처럼 아래 카드를 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💳</div>' +
+            '<div class="status-text" id="pay-status">카드를 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "결제 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(6); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 6. 완료 */
+    {
+      label:"주문 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        var num = 30 + (Math.abs((state.itemName || "").length * 7) % 60);
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">✅</div>' +
+            '<div class="screen-title">주문이 완료되었어요!</div>' +
+            '<div class="screen-sub">번호가 호출되면 카운터에서 받아주세요.</div>' +
+            '<div class="order-number">대기번호 ' + num + '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.fastfood = {
+    title:"패스트푸드 주문",
+    emoji:"🍔",
+    screens: fastfoodScreens,
+    initialState:function(){
+      fastfoodActiveTab = "burger";
+      return { itemId:null, itemName:null, itemPrice:0, isSet:false, payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 버스 (시외버스 발권기) ============ */
+  var busDestinations = [
+    {id:"seoul", name:"서울", emoji:"🗼"},
+    {id:"busan", name:"부산", emoji:"🌊"},
+    {id:"daejeon", name:"대전", emoji:"🏢"},
+    {id:"gwangju", name:"광주", emoji:"🌻"},
+    {id:"gangneung", name:"강릉", emoji:"⛰️"},
+    {id:"jeonju", name:"전주", emoji:"🏮"}
+  ];
+  var busTimes = ["09:00", "10:30", "13:00", "15:30", "18:00"];
+  var busOccupiedSeats = ["A2", "B4", "C1", "D3", "E2"];
+  var busSeatRows = ["A", "B", "C", "D", "E"];
+
+  var busScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 승차권 구매를 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 🚌</div>' +
+          '<div class="screen-sub">화면을 터치하여 승차권 구매를 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 목적지 선택 */
+    {
+      label:"목적지 선택",
+      hint:"여러 도시 중에서 부산을 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='busan']"]; },
+      render:function(){
+        var items = busDestinations.map(function(d){
+          return (
+            '<div class="menu-card" data-menu="' + d.id + '" data-name="' + d.name + '">' +
+              '<span class="emoji">' + d.emoji + '</span>' +
+              '<div class="name">' + d.name + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">목적지를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>부산</b>을 찾아서 눌러보세요.</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "busan"){
+              state.dest = name;
+              goToScreen(2);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 부산을 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 2. 날짜 선택 */
+    {
+      label:"날짜 선택",
+      hint:"파란색으로 표시된 오늘 날짜(15일)를 찾아 눌러주세요.",
+      hintTargets:function(){ return [".calendar-day.today"]; },
+      render:function(){
+        var heads = ["일","월","화","수","목","금","토"];
+        var headHtml = heads.map(function(h){ return '<div class="calendar-head">' + h + '</div>'; }).join("");
+        var daysHtml = "";
+        for(var d = 1; d <= 30; d++){
+          daysHtml += '<div class="calendar-day' + (d === 15 ? " today" : "") + '" data-day="' + d + '">' + d + '</div>';
+        }
+        return (
+          '<div class="screen-title">출발 날짜를 선택해주세요</div>' +
+          '<div class="screen-sub">오늘 날짜(파란색)를 눌러주세요.</div>' +
+          '<div class="calendar-grid">' + headHtml + daysHtml + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".calendar-day").forEach(function(cell){
+          bindActivate(cell, function(){
+            var day = cell.getAttribute("data-day");
+            if(day === "15"){
+              state.date = day + "일";
+              goToScreen(3);
+            } else {
+              markMistake(cell, day + "일이 아니에요. 파란색으로 표시된 오늘 날짜(15일)를 선택해주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 3. 시간 선택 */
+    {
+      label:"시간 선택",
+      hint:"가장 이른 시간인 09:00을 선택해주세요.",
+      hintTargets:function(){ return ["[data-time='09:00']"]; },
+      render:function(){
+        var items = busTimes.map(function(t){
+          return '<button class="option-btn" data-time="' + t + '">' + t + '</button>';
+        }).join("");
+        return (
+          '<div class="screen-title">출발 시간을 선택해주세요</div>' +
+          '<div class="screen-sub">가장 빠른 시간인 <b>09:00</b>을 선택해주세요.</div>' +
+          '<div class="option-row">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-time]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            var t = btn.getAttribute("data-time");
+            if(t === "09:00"){
+              state.time = t;
+              goToScreen(4);
+            } else {
+              markMistake(btn, t + ", 이번엔 아니에요. 가장 빠른 시간인 09:00을 선택해주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 4. 좌석 선택 */
+    {
+      label:"좌석 선택",
+      hint:"회색으로 표시된 좌석은 이미 예약된 자리예요. 비어있는 좌석 중 아무 곳이나 눌러보세요.",
+      hintTargets:function(){ return [".seat:not(.occupied)"]; },
+      render:function(){
+        var rowsHtml = busSeatRows.map(function(row){
+          var seatsHtml = [1,2].map(function(col){
+            var label = row + col;
+            var occ = busOccupiedSeats.indexOf(label) !== -1;
+            return '<div class="seat' + (occ ? " occupied" : "") + '" data-seat="' + label + '">' + label + '</div>';
+          }).join("") + '<div class="seat-aisle"></div>' + [3,4].map(function(col){
+            var label = row + col;
+            var occ = busOccupiedSeats.indexOf(label) !== -1;
+            return '<div class="seat' + (occ ? " occupied" : "") + '" data-seat="' + label + '">' + label + '</div>';
+          }).join("");
+          return '<div class="seat-row">' + seatsHtml + '</div>';
+        }).join("");
+        return (
+          '<div class="screen-title">좌석을 선택해주세요</div>' +
+          '<div class="screen-sub">비어있는 좌석 중 원하는 자리를 눌러주세요.</div>' +
+          '<div class="seat-map">' + rowsHtml + '</div>' +
+          '<div class="seat-legend">' +
+            '<span><span class="seat-swatch"></span>빈 좌석</span>' +
+            '<span><span class="seat-swatch occupied"></span>예약된 좌석</span>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".seat").forEach(function(seat){
+          bindActivate(seat, function(){
+            var label = seat.getAttribute("data-seat");
+            if(seat.classList.contains("occupied")){
+              markMistake(seat, label + " 좌석은 이미 예약된 자리예요. 다른 좌석을 선택해주세요.");
+            } else {
+              state.seat = label;
+              goToScreen(5);
+            }
+          });
+        });
+      }
+    },
+    /* 5. 예매 내용 확인 */
+    {
+      label:"예매 확인",
+      hint:"내용을 확인했으면 초록색 '결제하기' 버튼을 눌러주세요.",
+      hintTargets:function(){ return ["#act-checkout"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">예매 내용을 확인해주세요</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">목적지</span><span>' + state.dest + '</span></div>' +
+            '<div class="cart-row"><span class="label">날짜</span><span>' + state.date + '</span></div>' +
+            '<div class="cart-row"><span class="label">시간</span><span>' + state.time + '</span></div>' +
+            '<div class="cart-row"><span class="label">좌석</span><span>' + state.seat + '</span></div>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(6); });
+      }
+    },
+    /* 6. 결제 수단 */
+    {
+      label:"결제 수단",
+      hint:"세 가지 중에서 '카드' 결제를 눌러주세요.",
+      hintTargets:function(){ return ["[data-pay='card']"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
+          '<div class="screen-sub"><b>카드</b>로 결제해볼게요.</div>' +
+          '<div class="pay-grid">' +
+            '<div class="pay-card" data-pay="card"><span class="emoji">💳</span>카드</div>' +
+            '<div class="pay-card" data-pay="cash"><span class="emoji">💵</span>현금</div>' +
+            '<div class="pay-card" data-pay="mobile"><span class="emoji">📱</span>모바일페이</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".pay-card").forEach(function(card){
+          bindActivate(card, function(){
+            var type = card.getAttribute("data-pay");
+            if(type === "card"){
+              state.payment = "카드"; goToScreen(7);
+            } else {
+              var label = type === "cash" ? "현금" : "모바일페이";
+              markMistake(card, label + " 결제는 이번엔 연습하지 않아요. 카드 버튼을 눌러주세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 7. 카드 결제 진행 */
+    {
+      label:"카드 결제",
+      hint:"카드 그림을 눌러서 카드를 넣는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">카드를 넣어주세요</div>' +
+          '<div class="screen-sub">카드 투입구에 카드를 넣는 것처럼 아래 카드를 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">💳</div>' +
+            '<div class="status-text" id="pay-status">카드를 넣어주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "결제 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "결제가 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(8); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 8. 완료 */
+    {
+      label:"발권 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🎫</div>' +
+            '<div class="screen-title">승차권이 발권되었어요!</div>' +
+            '<div class="screen-sub">출발 10분 전까지 승차장으로 가주세요.</div>' +
+            '<div class="ticket-box">' +
+              '<div class="cart-row"><span class="label">목적지</span><span>' + state.dest + '</span></div>' +
+              '<div class="cart-row"><span class="label">날짜/시간</span><span>' + state.date + ' ' + state.time + '</span></div>' +
+              '<div class="cart-row"><span class="label">좌석</span><span>' + state.seat + '</span></div>' +
+            '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.bus = {
+    title:"버스 승차권 구매",
+    emoji:"🚌",
+    screens: busScreens,
+    initialState:function(){
+      return { dest:null, date:null, time:null, seat:null, payment:null };
+    }
+  };
+
+  /* ============ 시나리오: 무인민원발급기 ============ */
+  var civilDocs = [
+    {id:"resident-full", name:"주민등록등본", emoji:"📄"},
+    {id:"resident-part", name:"주민등록초본", emoji:"📄"},
+    {id:"family-cert", name:"가족관계증명서", emoji:"📑"},
+    {id:"seal-cert", name:"인감증명서", emoji:"🔖"}
+  ];
+
+  var civilScreens = [
+    /* 0. 시작 화면 */
+    {
+      label:"시작",
+      hint:"화면 가운데 파란 버튼을 눌러 발급을 시작해요.",
+      hintTargets:function(){ return ["#act-start"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">환영합니다 🏛️</div>' +
+          '<div class="screen-sub">화면을 터치하여 증명서 발급을 시작해주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){
+          goToScreen(1);
+        });
+      }
+    },
+    /* 1. 증명서 종류 선택 */
+    {
+      label:"증명서 선택",
+      hint:"여러 증명서 중에서 주민등록등본을 찾아 눌러주세요.",
+      hintTargets:function(){ return ["[data-menu='resident-full']"]; },
+      render:function(){
+        var items = civilDocs.map(function(d){
+          return (
+            '<div class="menu-card" data-menu="' + d.id + '" data-name="' + d.name + '">' +
+              '<span class="emoji">' + d.emoji + '</span>' +
+              '<div class="name">' + d.name + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">발급받을 증명서를 선택해주세요</div>' +
+          '<div class="screen-sub"><b>주민등록등본</b>을 찾아서 눌러보세요.</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll(".menu-card").forEach(function(card){
+          bindActivate(card, function(){
+            var id = card.getAttribute("data-menu");
+            var name = card.getAttribute("data-name");
+            if(id === "resident-full"){
+              state.docName = name;
+              goToScreen(2);
+            } else {
+              markMistake(card, "이건 " + name + josa(name, "이에요", "예요") + ". 주민등록등본을 다시 찾아보세요.");
+            }
+          });
+        });
+      }
+    },
+    /* 2. 본인 확인 (지문 인증) */
+    {
+      label:"본인 확인",
+      hint:"지문 그림을 눌러서 지문 인식기에 손가락을 대는 동작을 연습해보세요.",
+      hintTargets:function(){ return ["#act-insert"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">본인 확인을 해주세요</div>' +
+          '<div class="screen-sub">지문 인식기에 손가락을 대는 것처럼 아래 그림을 눌러주세요.</div>' +
+          '<div class="card-slot-wrap">' +
+            '<div class="card-slot" id="act-insert">👆</div>' +
+            '<div class="status-text" id="pay-status">지문을 대주세요</div>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        var done = false;
+        bindActivate(root.querySelector("#act-insert"), function(){
+          if(done) return;
+          done = true;
+          var slot = root.querySelector("#act-insert");
+          var status = root.querySelector("#pay-status");
+          slot.classList.add("inserting");
+          status.textContent = "지문을 인식 중입니다...";
+          setTimeout(function(){
+            slot.classList.remove("inserting");
+            status.textContent = "본인 확인이 완료되었습니다 ✅";
+            setTimeout(function(){ goToScreen(3); }, 900);
+          }, 1300);
+        });
+      }
+    },
+    /* 3. 발급 부수 선택 */
+    {
+      label:"발급 부수",
+      hint:"+ 버튼으로 발급 부수를 정한 다음, 발급하기 버튼을 눌러주세요. 몇 부를 선택해도 괜찮아요.",
+      hintTargets:function(){ return ["#act-add"]; },
+      render:function(){
+        return (
+          '<div class="screen-title">' + state.docName + ' 발급 부수를 선택해주세요</div>' +
+          '<div class="screen-sub">필요한 부수를 정한 후 발급하기 버튼을 눌러주세요.</div>' +
+          '<div class="qty-stepper">' +
+            '<button class="qty-btn" id="qty-minus">−</button>' +
+            '<div class="qty-num">' + state.qty + '부</div>' +
+            '<button class="qty-btn" id="qty-plus">+</button>' +
+          '</div>' +
+          '<button class="confirm-btn" id="act-add">🖨️ 발급하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#qty-minus").addEventListener("click", function(){
+          state.qty = Math.max(1, state.qty - 1); renderScreen();
+        });
+        root.querySelector("#qty-plus").addEventListener("click", function(){
+          state.qty = Math.min(5, state.qty + 1); renderScreen();
+        });
+        root.querySelector("#act-add").addEventListener("click", function(){
+          goToScreen(4);
+        });
+      }
+    },
+    /* 4. 완료 */
+    {
+      label:"발급 완료",
+      hint:"내용을 확인했으면 아래 버튼을 눌러 연습을 마쳐요.",
+      hintTargets:function(){ return ["#act-finish"]; },
+      render:function(){
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🖨️</div>' +
+            '<div class="screen-title">발급이 완료되었어요!</div>' +
+            '<div class="screen-sub">아래 출력구에서 서류를 꺼내가세요.</div>' +
+            '<div class="ticket-box">' +
+              '<div class="cart-row"><span class="label">증명서</span><span>' + state.docName + '</span></div>' +
+              '<div class="cart-row"><span class="label">부수</span><span>' + state.qty + '부</span></div>' +
+              '<div class="cart-row"><span class="label">발급 수수료</span><span>무료</span></div>' +
+            '</div>' +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.civil = {
+    title:"무인민원발급기 이용",
+    emoji:"🏛️",
+    screens: civilScreens,
+    initialState:function(){
+      return { docName:null, qty:1 };
+    }
+  };
+
+})();
+</script>
+</body>
+</html>
