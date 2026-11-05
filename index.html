@@ -346,6 +346,70 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   .pay-grid{grid-template-columns:1fr;}
   .kiosk-screen{padding:24px 18px;}
 }
+/* ===== 승차권(버스·기차) 전용 ===== */
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.day-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:12px;border:2px solid var(--border);background:var(--surface);color:var(--text);}
+.day-btn .dow{font-size:.85rem;font-weight:700;color:var(--text-secondary);}
+.day-btn .num{font-size:1.2rem;font-weight:900;}
+.day-btn.sun .num,.day-btn.sun .dow{color:#dc2626;}
+.day-btn.sat .num,.day-btn.sat .dow{color:#2563eb;}
+.day-btn.selected{background:var(--primary);border-color:var(--primary);}
+.day-btn.selected .num,.day-btn.selected .dow{color:#fff;}
+.route-bar{display:flex;align-items:center;justify-content:center;gap:10px 14px;padding:14px;border-radius:var(--radius-md);background:#eef2ff;font-size:1.3rem;font-weight:900;color:var(--primary-dark);margin-bottom:20px;flex-wrap:wrap;}
+.route-bar small{font-size:.95rem;font-weight:700;color:var(--text-secondary);background:#fff;padding:4px 10px;border-radius:999px;}
+.sched-list{display:flex;flex-direction:column;gap:10px;}
+.sched-row{display:grid;gap:10px;align-items:center;padding:14px;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--surface);}
+.sched-row.bus{grid-template-columns:1.3fr 1fr 1fr 1.1fr;}
+.sched-row.train{grid-template-columns:1.1fr 1.5fr 1fr 1fr;}
+.sched-row.gone{opacity:.5;}
+.sched-type{font-weight:900;font-size:1.1rem;}
+.sched-type small,.sched-time small{display:block;font-size:.85rem;color:var(--text-secondary);font-weight:700;}
+.sched-time{font-size:1.25rem;font-weight:900;}
+.sched-info{font-size:.95rem;color:var(--text-secondary);font-weight:600;}
+.sched-info b{font-size:1.1rem;color:var(--text);}
+.sched-btn{padding:12px 6px;border-radius:12px;border:2px solid var(--primary);background:#fff;color:var(--primary-dark);font-weight:800;font-size:1.05rem;line-height:1.3;}
+.sched-btn.special{border-color:#a16207;color:#854d0e;}
+.sched-btn small{display:block;font-size:.9rem;font-weight:700;}
+.sched-btn:disabled{border-color:var(--border);color:var(--text-faint);background:var(--surface);}
+.type-ktx{color:#1d4ed8;}
+.type-itx{color:#b91c1c;}
+.type-mugung{color:#c2410c;}
+.grade-tag{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.9rem;font-weight:800;background:#eef2ff;color:var(--primary-dark);border:1px solid #c7d2fe;}
+.grade-tag.normal{background:#fff;border-color:var(--border);color:var(--text-secondary);}
+.count-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border:2px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;}
+.count-row .who{font-size:1.3rem;font-weight:800;}
+.count-row .who small{display:block;font-size:.9rem;font-weight:600;color:var(--text-secondary);}
+.count-ctrl{display:flex;align-items:center;gap:14px;}
+.count-ctrl .qty-btn{width:56px;height:56px;font-size:1.6rem;}
+.count-ctrl .num{font-size:1.7rem;font-weight:900;min-width:36px;text-align:center;}
+.qty-btn:disabled,.confirm-btn:disabled{opacity:.4;}
+.notice-box{padding:14px 16px;border-radius:var(--radius-md);background:var(--warn-bg);color:var(--warn);font-weight:700;font-size:1.02rem;margin-bottom:18px;line-height:1.6;}
+.choice-row.three{grid-template-columns:repeat(3,1fr);}
+.choice-sub{font-size:.9rem;color:var(--text-secondary);font-weight:600;margin-top:8px;}
+.car-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.option-btn.small{padding:12px 18px;font-size:1.05rem;}
+.seat-front{font-size:1rem;font-weight:800;color:var(--text-secondary);margin-bottom:10px;text-align:center;}
+.seat.sel{background:var(--primary);border-color:var(--primary);color:#fff;}
+.seat.tseat{flex-direction:column;width:60px;height:62px;gap:2px;font-size:.95rem;}
+.seat.tseat.win{box-shadow:inset 0 0 0 2px #bfdbfe;}
+.dir{font-size:.75rem;font-weight:800;padding:1px 6px;border-radius:6px;}
+.dir.fwd{background:#dbeafe;color:#1d4ed8;}
+.dir.rev{background:#ffedd5;color:#c2410c;}
+.seat.occupied .dir{background:transparent;color:#fff;}
+.seat.sel .dir{background:rgba(255,255,255,.25);color:#fff;}
+.seat-swatch.sel{background:var(--primary);border-color:var(--primary);}
+.seat-legend{flex-wrap:wrap;}
+.picked-list{margin-top:14px;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:1.02rem;line-height:1.6;}
+.ticket-head{font-size:1.2rem;font-weight:900;margin-bottom:8px;}
+.cart-row .big{font-size:1.3rem;font-weight:900;color:var(--primary-dark);}
+.disc{display:inline-block;font-size:.8rem;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--success-bg);color:var(--success);}
+.disc.off{background:var(--surface);color:var(--text-faint);border:1px solid var(--border);}
+@media (max-width:640px){
+  .day-grid{grid-template-columns:repeat(4,1fr);}
+  .sched-row.bus,.sched-row.train{grid-template-columns:1fr 1fr;}
+  .choice-row.three{grid-template-columns:1fr;}
+  .seat.tseat{width:50px;height:56px;font-size:.85rem;}
+}
 </style>
 </head>
 <body>
@@ -469,7 +533,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     { id:"hospital", name:"병원", emoji:"🏥", enabled:true },
     { id:"store", name:"무인가게", emoji:"🏪", enabled:true },
     { id:"fastfood", name:"패스트푸드", emoji:"🍔", enabled:true },
-    { id:"bus", name:"버스", emoji:"🚌", enabled:true },
+    { id:"bus", name:"시외·고속버스", emoji:"🚌", enabled:true },
+    { id:"train", name:"기차", emoji:"🚆", enabled:true },
     { id:"civil", name:"무인민원발급기", emoji:"🏛️", enabled:true }
   ];
 
@@ -2078,18 +2143,169 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     }
   };
 
-  /* ============ 시나리오: 버스 (시외버스 발권기) ============ */
-  var busDestinations = [
-    {id:"seoul", name:"서울", emoji:"🗼", fare:9500},
-    {id:"busan", name:"부산", emoji:"🌊", fare:24000},
-    {id:"daejeon", name:"대전", emoji:"🏢", fare:12000},
-    {id:"gwangju", name:"광주", emoji:"🌻", fare:19000},
-    {id:"gangneung", name:"강릉", emoji:"⛰️", fare:17000},
-    {id:"jeonju", name:"전주", emoji:"🏮", fare:15000}
+  /* ============ 승차권 공용 헬퍼 (시외·고속버스 / 기차) ============ */
+  var WEEK_KO = ["일","월","화","수","목","금","토"];
+  var TICKET_PAY = [PAY_METHODS[0], PAY_METHODS[3]];
+  function seedRand(n){ var x = Math.sin(n * 9301 + 49297) * 233280; return x - Math.floor(x); }
+  function upcomingDays(count){
+    var list = [];
+    var base = new Date(); base.setHours(0,0,0,0);
+    for(var i = 0; i < count; i++){
+      var d = new Date(base.getTime()); d.setDate(base.getDate() + i);
+      list.push({ offset:i, month:d.getMonth() + 1, day:d.getDate(), dow:d.getDay(),
+        label:(d.getMonth() + 1) + "월 " + d.getDate() + "일 (" + WEEK_KO[d.getDay()] + ")" });
+    }
+    return list;
+  }
+  function dayInfo(offset){ return upcomingDays(offset + 1)[offset]; }
+  function renderDayPicker(selOffset){
+    return '<div class="day-grid">' + upcomingDays(14).map(function(d){
+      var cls = "day-btn" + (d.dow === 0 ? " sun" : "") + (d.dow === 6 ? " sat" : "") + (selOffset === d.offset ? " selected" : "");
+      var top = d.offset === 0 ? "오늘" : (d.offset === 1 ? "내일" : WEEK_KO[d.dow] + "요일");
+      return '<button class="' + cls + '" data-offset="' + d.offset + '"><span class="dow">' + top + '</span><span class="num">' + d.month + '/' + d.day + '</span></button>';
+    }).join("") + '</div>';
+  }
+  function attachDayPicker(root, onPick){
+    root.querySelectorAll(".day-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){ onPick(Number(btn.getAttribute("data-offset"))); });
+    });
+  }
+  function nowMinutes(){ var n = new Date(); return n.getHours() * 60 + n.getMinutes(); }
+  function toMin(t){ var p = t.split(":"); return Number(p[0]) * 60 + Number(p[1]); }
+  function hhmm(min){ min = ((min % 1440) + 1440) % 1440; var h = Math.floor(min / 60), m = min % 60; return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m; }
+  function durText(min){ var h = Math.floor(min / 60), m = min % 60; return (h > 0 ? h + "시간" : "") + (h > 0 && m > 0 ? " " : "") + (m > 0 ? m + "분" : ""); }
+  function floor100(n){ return Math.floor(n / 100) * 100; }
+  function paxTotal(pax){ var t = 0; for(var k in pax){ if(pax.hasOwnProperty(k)) t += pax[k]; } return t; }
+  function paxList(pax, defs){
+    var list = [];
+    defs.forEach(function(d){ for(var i = 0; i < pax[d.id]; i++) list.push(d); });
+    return list;
+  }
+  function renderCountRows(defs, pax){
+    return defs.map(function(d){
+      var val = pax[d.id];
+      return (
+        '<div class="count-row"><div class="who">' + d.name + '<small>' + d.desc + '</small></div>' +
+          '<div class="count-ctrl">' +
+            '<button class="qty-btn" data-cnt="' + d.id + '" data-delta="-1"' + (val <= 0 ? ' disabled' : '') + '>−</button>' +
+            '<span class="num">' + val + '</span>' +
+            '<button class="qty-btn" data-cnt="' + d.id + '" data-delta="1">+</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+  }
+  function attachCountRows(root, pax, maxTotal){
+    root.querySelectorAll("[data-cnt]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var type = btn.getAttribute("data-cnt");
+        var delta = Number(btn.getAttribute("data-delta"));
+        if(delta > 0 && paxTotal(pax) >= maxTotal){ showFeedback("한 번에 " + maxTotal + "명까지 살 수 있어요"); return; }
+        pax[type] = Math.max(0, pax[type] + delta);
+        renderScreen();
+      });
+    });
+  }
+  function seatIndexOf(id){
+    for(var i = 0; i < state.seats.length; i++){ if(state.seats[i].id === id) return i; }
+    return -1;
+  }
+  function renderSeatLegend(withDir){
+    return (
+      '<div class="seat-legend">' +
+        '<span><span class="seat-swatch"></span>빈 좌석</span>' +
+        '<span><span class="seat-swatch sel"></span>내가 고른 좌석</span>' +
+        '<span><span class="seat-swatch occupied"></span>이미 팔린 좌석</span>' +
+        (withDir ? '<span><span class="dir fwd">순방향</span>앞을 보고 앉음</span><span><span class="dir rev">역방향</span>뒤를 보고 앉음</span>' : '') +
+      '</div>'
+    );
+  }
+  function attachSeatPicker(root, need, onDone){
+    root.querySelectorAll(".seat[data-seat]:not(.occupied)").forEach(function(seat){
+      bindActivate(seat, function(){
+        var id = seat.getAttribute("data-seat");
+        var idx = seatIndexOf(id);
+        if(idx !== -1){
+          state.seats.splice(idx, 1);
+        } else if(state.seats.length >= need){
+          showFeedback("인원 수(" + need + "명)만큼만 고를 수 있어요. 고른 좌석을 한 번 더 누르면 취소돼요.");
+          return;
+        } else {
+          state.seats.push({ id:id, car:seat.getAttribute("data-car"), label:seat.getAttribute("data-label"), dir:seat.getAttribute("data-dir") });
+        }
+        renderScreen();
+      });
+    });
+    var btn = root.querySelector("#act-seat-done");
+    if(btn) btn.addEventListener("click", function(){
+      if(state.seats.length !== need){ showFeedback("좌석을 " + need + "개 골라주세요 (지금 " + state.seats.length + "개)"); return; }
+      onDone();
+    });
+  }
+
+  /* ============ 시나리오: 시외·고속버스 (창녕시외버스터미널 승차권 자동발매기) ============ */
+  /* 요금·시간은 연습용 예시입니다 (대구서부·영산·남지는 실제 시간표 참고, 나머지는 근사치) */
+  var BUS_TERMINAL = "창녕시외버스터미널";
+  var busRoutes = [
+    {id:"daegu", name:"대구서부", emoji:"🏙️", min:38, udeung:5600, normal:4300, times:["07:30","08:20","09:10","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:30"]},
+    {id:"yeongsan", name:"영산", emoji:"🌾", min:15, udeung:1900, normal:1500, times:["07:50","09:40","11:30","13:20","15:10","17:00","18:40","20:00"]},
+    {id:"namji", name:"남지", emoji:"🌼", min:25, udeung:2600, normal:2000, times:["07:10","08:40","10:10","11:40","13:10","14:40","16:10","17:40","19:10"]},
+    {id:"masan", name:"마산", emoji:"⚓", min:55, udeung:6200, normal:4800, times:["07:20","09:00","11:00","13:00","15:00","17:00","19:00"]},
+    {id:"changwon", name:"창원", emoji:"🏭", min:65, udeung:6800, normal:5300, times:["07:40","09:30","12:10","14:30","16:50","18:30"]},
+    {id:"busan", name:"부산서부", emoji:"🌊", min:80, udeung:9600, normal:7400, times:["07:00","08:30","10:30","12:30","14:30","16:30","18:30"]},
+    {id:"jinju", name:"진주", emoji:"🏯", min:90, udeung:9300, normal:7200, times:["08:10","11:20","14:40","17:50"]},
+    {id:"seoul", name:"서울남부", emoji:"🗼", min:260, udeung:34500, normal:0, times:["08:00","10:30","14:00","17:30"]}
   ];
-  var busTimes = ["09:00", "10:30", "13:00", "15:30", "18:00"];
-  var busOccupiedSeats = ["A2", "B4", "C1", "D3", "E2"];
-  var busSeatRows = ["A", "B", "C", "D", "E"];
+  var BUS_GRADES = { udeung:{name:"우등", seats:28}, normal:{name:"일반", seats:45} };
+  var BUS_PAX = [
+    {id:"adult", name:"일반", desc:"어른 (어르신도 여기를 고르세요)", rate:1},
+    {id:"teen", name:"중고생", desc:"중학생·고등학생", rate:0.8},
+    {id:"kid", name:"초등생", desc:"초등학생", rate:0.5}
+  ];
+  function busRouteById(id){ for(var i = 0; i < busRoutes.length; i++){ if(busRoutes[i].id === id) return busRoutes[i]; } return null; }
+  function busSchedule(route, dayOffset){
+    var rIdx = busRoutes.indexOf(route);
+    return route.times.map(function(t, i){
+      var grade = (route.normal && i % 2 === 1) ? "normal" : "udeung";
+      var seed = (rIdx + 1) * 1000 + i * 37 + dayOffset * 7;
+      var dep = toMin(t);
+      return { idx:i, time:t, dep:dep, grade:grade, seed:seed,
+        gone: dayOffset === 0 && dep <= nowMinutes(),
+        soldOut: seedRand(seed) < 0.12 };
+    });
+  }
+  function busOccupied(bus, no){ return bus.soldOut || seedRand(bus.seed * 3 + no) < 0.35; }
+  function busFreeCount(bus){
+    var total = BUS_GRADES[bus.grade].seats, n = 0;
+    for(var s = 1; s <= total; s++){ if(!busOccupied(bus, s)) n++; }
+    return n;
+  }
+  function busLayout(grade){
+    var rows = [], n = 1, r;
+    if(grade === "udeung"){
+      for(r = 0; r < 8; r++){ rows.push([n, null, n + 1, n + 2]); n += 3; }
+      rows.push([n, n + 1, n + 2, n + 3]);
+    } else {
+      for(r = 0; r < 10; r++){ rows.push([n, n + 1, null, n + 2, n + 3]); n += 4; }
+      rows.push([n, n + 1, n + 2, n + 3, n + 4]);
+    }
+    return rows;
+  }
+  function busPaxFare(paxDef){
+    var route = busRouteById(state.route);
+    return floor100(route[state.bus.grade] * paxDef.rate);
+  }
+  function busTotal(){
+    if(!state.bus) return 0;
+    return paxList(state.pax, BUS_PAX).reduce(function(sum, p){ return sum + busPaxFare(p); }, 0);
+  }
+  function busRouteBar(){
+    var route = busRouteById(state.route);
+    var extra = "";
+    if(state.dayOffset !== null) extra += '<small>' + dayInfo(state.dayOffset).label + '</small>';
+    if(state.bus) extra += '<small>' + state.bus.time + ' 출발 · ' + BUS_GRADES[state.bus.grade].name + '</small>';
+    return '<div class="route-bar">창녕 <span>➜</span> ' + route.name + extra + '</div>';
+  }
 
   var busScreens = [
     /* 0. 시작 화면 */
@@ -2097,179 +2313,213 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
       label:"시작",
       render:function(){
         return (
-          '<div class="screen-title">환영합니다 🚌</div>' +
-          '<div class="screen-sub">화면을 터치하여 승차권 구매를 시작해주세요.</div>' +
-          '<button class="big-tap-btn" id="act-start"><span class="emoji">👋</span>터치하여 시작하기</button>'
+          '<div class="screen-title">' + BUS_TERMINAL + ' 🚌</div>' +
+          '<div class="screen-sub">승차권 자동발매기입니다. 아래 버튼을 눌러 시작하세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">🎫</span>승차권 구매</button>'
         );
       },
       attach:function(root){
-        root.querySelector("#act-start").addEventListener("click", function(){
-          goToScreen(1);
-        });
+        root.querySelector("#act-start").addEventListener("click", function(){ goToScreen(1); });
       }
     },
-    /* 1. 목적지 선택 (자유 선택) */
+    /* 1. 도착지 선택 */
     {
-      label:"목적지 선택",
+      label:"도착지 선택",
       render:function(){
-        var items = busDestinations.map(function(d){
+        var items = busRoutes.map(function(r){
           return (
-            '<div class="menu-card" data-menu="' + d.id + '">' +
-              '<span class="emoji">' + d.emoji + '</span>' +
-              '<div class="name">' + d.name + '</div>' +
-              '<div class="price">' + formatWon(d.fare) + '</div>' +
+            '<div class="menu-card' + (state.route === r.id ? " sel" : "") + '" data-route="' + r.id + '">' +
+              '<span class="emoji">' + r.emoji + '</span>' +
+              '<div class="name">' + r.name + '</div>' +
+              '<div class="price">약 ' + durText(r.min) + '</div>' +
             '</div>'
           );
         }).join("");
         return (
-          '<div class="screen-title">목적지를 선택해주세요</div>' +
-          '<div class="screen-sub">가시고 싶은 곳을 자유롭게 눌러주세요.</div>' +
+          '<div class="screen-title">어디로 가시나요?</div>' +
+          '<div class="screen-sub">출발: <b>' + BUS_TERMINAL + '</b> · 도착할 곳을 눌러주세요.</div>' +
           '<div class="menu-grid">' + items + '</div>'
         );
       },
       attach:function(root){
-        root.querySelectorAll(".menu-card").forEach(function(card){
+        root.querySelectorAll("[data-route]").forEach(function(card){
           bindActivate(card, function(){
-            var d = busDestinations.filter(function(x){ return x.id === card.getAttribute("data-menu"); })[0];
-            state.dest = d.name; state.fare = d.fare;
+            state.route = card.getAttribute("data-route");
+            state.bus = null; state.seats = [];
             goToScreen(2);
           });
         });
       }
     },
-    /* 2. 날짜 선택 (자유 선택) */
+    /* 2. 날짜 선택 */
     {
       label:"날짜 선택",
       render:function(){
-        var heads = ["일","월","화","수","목","금","토"];
-        var headHtml = heads.map(function(h){ return '<div class="calendar-head">' + h + '</div>'; }).join("");
-        var daysHtml = "";
-        for(var d = 1; d <= 30; d++){
-          daysHtml += '<div class="calendar-day' + (d === 15 ? " today" : "") + '" data-day="' + d + '">' + d + '</div>';
-        }
         return (
-          '<div class="screen-title">출발 날짜를 선택해주세요</div>' +
-          '<div class="screen-sub">파란색은 오늘(15일)이에요. 원하는 날짜를 자유롭게 눌러주세요.</div>' +
-          '<div class="calendar-grid">' + headHtml + daysHtml + '</div>'
+          busRouteBar() +
+          '<div class="screen-title">언제 가시나요?</div>' +
+          '<div class="screen-sub">출발 날짜를 눌러주세요. 맨 앞이 오늘이에요.</div>' +
+          renderDayPicker(state.dayOffset)
         );
       },
       attach:function(root){
-        root.querySelectorAll(".calendar-day").forEach(function(cell){
-          bindActivate(cell, function(){
-            state.date = cell.getAttribute("data-day") + "일";
-            goToScreen(3);
-          });
-        });
+        attachDayPicker(root, function(off){ state.dayOffset = off; state.bus = null; state.seats = []; goToScreen(3); });
       }
     },
-    /* 3. 시간 선택 (자유 선택) */
+    /* 3. 배차(시간) 조회 */
     {
       label:"시간 선택",
       render:function(){
-        var items = busTimes.map(function(t){
-          return '<button class="option-btn' + (state.time === t ? " selected" : "") + '" data-time="' + t + '">' + t + '</button>';
+        var route = busRouteById(state.route);
+        var rows = busSchedule(route, state.dayOffset).map(function(b){
+          var free = busFreeCount(b);
+          var fare = route[b.grade];
+          var btn;
+          if(b.gone) btn = '<button class="sched-btn" disabled>출발함</button>';
+          else if(free === 0) btn = '<button class="sched-btn" disabled>매진</button>';
+          else btn = '<button class="sched-btn" data-bus="' + b.idx + '">' + formatWon(fare) + '<small>선택</small></button>';
+          return (
+            '<div class="sched-row bus' + (b.gone || free === 0 ? " gone" : "") + '">' +
+              '<div class="sched-time">' + b.time + '<small>도착 약 ' + hhmm(b.dep + route.min) + '</small></div>' +
+              '<div><span class="grade-tag' + (b.grade === "normal" ? " normal" : "") + '">' + BUS_GRADES[b.grade].name + '</span></div>' +
+              '<div class="sched-info">남은 좌석<br><b>' + free + '석</b></div>' +
+              btn +
+            '</div>'
+          );
         }).join("");
         return (
-          '<div class="screen-title">출발 시간을 선택해주세요</div>' +
-          '<div class="screen-sub">원하는 시간을 자유롭게 눌러주세요.</div>' +
-          '<div class="option-row">' + items + '</div>'
+          busRouteBar() +
+          '<div class="screen-title">출발 시간을 골라주세요</div>' +
+          '<div class="screen-sub"><b>우등</b>은 좌석이 넓고 편한 버스, <b>일반</b>은 요금이 싼 버스예요.</div>' +
+          '<div class="sched-list">' + rows + '</div>'
         );
       },
       attach:function(root){
-        root.querySelectorAll("[data-time]").forEach(function(btn){
+        var route = busRouteById(state.route);
+        var list = busSchedule(route, state.dayOffset);
+        root.querySelectorAll("[data-bus]").forEach(function(btn){
           btn.addEventListener("click", function(){
-            state.time = btn.getAttribute("data-time");
+            state.bus = list[Number(btn.getAttribute("data-bus"))];
+            state.seats = [];
             goToScreen(4);
           });
         });
       }
     },
-    /* 4. 좌석 선택 (자유 선택) */
+    /* 4. 인원 선택 */
     {
-      label:"좌석 선택",
+      label:"인원 선택",
       render:function(){
-        var rowsHtml = busSeatRows.map(function(row){
-          var seatsHtml = [1,2].map(function(col){
-            var label = row + col;
-            var occ = busOccupiedSeats.indexOf(label) !== -1;
-            return '<div class="seat' + (occ ? " occupied" : "") + '" data-seat="' + label + '">' + label + '</div>';
-          }).join("") + '<div class="seat-aisle"></div>' + [3,4].map(function(col){
-            var label = row + col;
-            var occ = busOccupiedSeats.indexOf(label) !== -1;
-            return '<div class="seat' + (occ ? " occupied" : "") + '" data-seat="' + label + '">' + label + '</div>';
-          }).join("");
-          return '<div class="seat-row">' + seatsHtml + '</div>';
-        }).join("");
+        var total = paxTotal(state.pax);
         return (
-          '<div class="screen-title">좌석을 선택해주세요</div>' +
-          '<div class="screen-sub">비어있는 좌석 중 원하는 자리를 눌러주세요.</div>' +
-          '<div class="seat-map">' + rowsHtml + '</div>' +
-          '<div class="seat-legend">' +
-            '<span><span class="seat-swatch"></span>빈 좌석</span>' +
-            '<span><span class="seat-swatch occupied"></span>예약된 좌석</span>' +
-          '</div>'
+          busRouteBar() +
+          '<div class="screen-title">몇 분이 타시나요?</div>' +
+          '<div class="notice-box">💡 버스 표에는 <b>경로(어르신) 할인 버튼이 없어요.</b> 어르신도 <b>일반</b>으로 고르시면 돼요.</div>' +
+          renderCountRows(BUS_PAX, state.pax) +
+          '<button class="confirm-btn" id="act-next"' + (total === 0 ? " disabled" : "") + '>다음 (총 ' + total + '명)</button>'
         );
       },
       attach:function(root){
-        root.querySelectorAll(".seat:not(.occupied)").forEach(function(seat){
-          bindActivate(seat, function(){
-            state.seat = seat.getAttribute("data-seat");
-            goToScreen(5);
-          });
+        attachCountRows(root, state.pax, Math.min(9, busFreeCount(state.bus)));
+        root.querySelector("#act-next").addEventListener("click", function(){
+          if(paxTotal(state.pax) === 0){ showFeedback("인원을 1명 이상 골라주세요"); return; }
+          state.seats = [];
+          goToScreen(5);
         });
       }
     },
-    /* 5. 예매 내용 확인 */
+    /* 5. 좌석 선택 */
     {
-      label:"예매 확인",
+      label:"좌석 선택",
       render:function(){
+        var need = paxTotal(state.pax);
+        var rowsHtml = busLayout(state.bus.grade).map(function(row){
+          return '<div class="seat-row">' + row.map(function(no){
+            if(no === null) return '<div class="seat-aisle"></div>';
+            var occ = busOccupied(state.bus, no);
+            var sel = seatIndexOf(String(no)) !== -1;
+            return '<div class="seat' + (occ ? " occupied" : "") + (sel ? " sel" : "") + '" data-seat="' + no + '" data-label="' + no + '" data-car="" data-dir="">' + no + '</div>';
+          }).join("") + '</div>';
+        }).join("");
         return (
-          '<div class="screen-title">예매 내용을 확인해주세요</div>' +
+          busRouteBar() +
+          '<div class="screen-title">좌석을 골라주세요</div>' +
+          '<div class="screen-sub">' + need + '명이니까 빈 좌석을 <b>' + need + '개</b> 눌러주세요. (지금 <b>' + state.seats.length + '개</b> 고름)</div>' +
+          '<div class="seat-front">🚍 버스 앞쪽 (운전석)</div>' +
+          '<div class="seat-map">' + rowsHtml + '</div>' +
+          renderSeatLegend(false) +
+          '<button class="confirm-btn" id="act-seat-done"' + (state.seats.length !== need ? " disabled" : "") + '>좌석 선택 완료</button>'
+        );
+      },
+      attach:function(root){
+        attachSeatPicker(root, paxTotal(state.pax), function(){ goToScreen(6); });
+      }
+    },
+    /* 6. 예매 내용 확인 */
+    {
+      label:"내용 확인",
+      render:function(){
+        var paxRows = BUS_PAX.filter(function(p){ return state.pax[p.id] > 0; }).map(function(p){
+          return '<div class="cart-row"><span class="label">' + p.name + ' ' + state.pax[p.id] + '명</span><span>' + formatWon(busPaxFare(p) * state.pax[p.id]) + '</span></div>';
+        }).join("");
+        var seatText = state.seats.map(function(s){ return s.label + "번"; }).join(", ");
+        return (
+          '<div class="screen-title">구매 내용을 확인해주세요</div>' +
+          '<div class="screen-sub">틀린 곳이 있으면 위의 "이전" 버튼으로 돌아갈 수 있어요.</div>' +
           '<div class="cart-box">' +
-            '<div class="cart-row"><span class="label">목적지</span><span>' + state.dest + '</span></div>' +
-            '<div class="cart-row"><span class="label">날짜</span><span>' + state.date + '</span></div>' +
-            '<div class="cart-row"><span class="label">시간</span><span>' + state.time + '</span></div>' +
-            '<div class="cart-row"><span class="label">좌석</span><span>' + state.seat + '</span></div>' +
-            '<div class="cart-row" style="font-weight:800;"><span class="label">요금</span><span>' + formatWon(state.fare) + '</span></div>' +
+            '<div class="cart-row"><span class="label">출발 ➜ 도착</span><span>창녕 ➜ ' + busRouteById(state.route).name + '</span></div>' +
+            '<div class="cart-row"><span class="label">날짜</span><span>' + dayInfo(state.dayOffset).label + '</span></div>' +
+            '<div class="cart-row"><span class="label">출발 시간</span><span>' + state.bus.time + ' (' + BUS_GRADES[state.bus.grade].name + ')</span></div>' +
+            '<div class="cart-row"><span class="label">좌석</span><span>' + seatText + '</span></div>' +
+            paxRows +
+            '<div class="cart-row" style="font-weight:900;"><span class="label">결제할 금액</span><span style="color:var(--primary-dark);">' + formatWon(busTotal()) + '</span></div>' +
           '</div>' +
           '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
         );
       },
       attach:function(root){
-        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(6); });
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(7); });
       }
     },
-    /* 6. 결제 수단 */
+    /* 7. 결제 수단 */
     {
       label:"결제 수단",
       render:function(){
         return (
-          '<div class="screen-title">결제 수단을 선택해주세요</div>' +
-          '<div class="screen-sub">원하시는 결제 방법을 눌러주세요.</div>' +
-          renderPayGrid()
+          '<div class="screen-title">결제 방법을 골라주세요</div>' +
+          '<div class="screen-sub">결제할 금액: <b>' + formatWon(busTotal()) + '</b></div>' +
+          renderPayGrid(TICKET_PAY)
         );
       },
       attach:function(root){
-        attachPayGrid(root, function(id){ state.payment = id; goToScreen(7); });
+        attachPayGrid(root, function(id){ state.payment = id; goToScreen(8); });
       }
     },
-    /* 7. 결제 진행 */
-    paymentAnimScreen(8),
-    /* 8. 완료 */
+    /* 8. 결제 진행 */
+    paymentAnimScreen(9),
+    /* 9. 발권 완료 */
     {
       label:"발권 완료",
       render:function(){
+        var route = busRouteById(state.route);
+        var platform = busRoutes.indexOf(route) + 1;
+        var tickets = paxList(state.pax, BUS_PAX).map(function(p, i){
+          return (
+            '<div class="ticket-box">' +
+              '<div class="ticket-head">🚌 창녕 ➜ ' + route.name + ' <span class="grade-tag' + (state.bus.grade === "normal" ? " normal" : "") + '">' + BUS_GRADES[state.bus.grade].name + '</span></div>' +
+              '<div class="cart-row"><span class="label">출발</span><span>' + dayInfo(state.dayOffset).label + ' ' + state.bus.time + '</span></div>' +
+              '<div class="cart-row"><span class="label">좌석</span><span class="big">' + state.seats[i].label + '번</span></div>' +
+              '<div class="cart-row"><span class="label">승차홈</span><span class="big">' + platform + '번</span></div>' +
+              '<div class="cart-row"><span class="label">' + p.name + '</span><span>' + formatWon(busPaxFare(p)) + '</span></div>' +
+            '</div>'
+          );
+        }).join("");
         return (
           '<div class="done-box">' +
             '<div class="emoji">🎫</div>' +
-            '<div class="screen-title">승차권이 발권되었어요!</div>' +
-            '<div class="screen-sub">출발 10분 전까지 승차장으로 가주세요.</div>' +
-            '<div class="ticket-box">' +
-              '<div class="cart-row"><span class="label">목적지</span><span>' + state.dest + '</span></div>' +
-              '<div class="cart-row"><span class="label">날짜/시간</span><span>' + state.date + ' ' + state.time + '</span></div>' +
-              '<div class="cart-row"><span class="label">좌석</span><span>' + state.seat + '</span></div>' +
-              '<div class="cart-row"><span class="label">요금</span><span>' + formatWon(state.fare) + '</span></div>' +
-            '</div>' +
+            '<div class="screen-title">승차권이 나왔어요!</div>' +
+            '<div class="screen-sub">아래 출구에서 승차권(' + paxTotal(state.pax) + '장)을 꼭 챙기세요. 출발 10분 전까지 <b>' + platform + '번 승차홈</b>으로 가세요.</div>' +
+            tickets +
             '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
           '</div>'
         );
@@ -2281,14 +2531,432 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   ];
 
   scenarioDefs.bus = {
-    title:"버스 승차권 구매",
+    title:"시외·고속버스 승차권 구매",
     emoji:"🚌",
     screens: busScreens,
     initialState:function(){
-      return { dest:null, fare:0, date:null, time:null, seat:null, payment:null };
+      return { route:null, dayOffset:null, bus:null, pax:{adult:1, teen:0, kid:0}, seats:[], payment:null };
     },
     summaryStats:function(state){
-      return { aLabel:"목적지", aVal:state.dest || "-", bLabel:"결제 금액", bVal:formatWon(state.fare) };
+      var r = state.route ? busRouteById(state.route) : null;
+      return { aLabel:"목적지", aVal:r ? r.name : "-", bLabel:"결제 금액", bVal:formatWon(busTotal()) };
+    }
+  };
+
+  /* ============ 시나리오: 기차 (역 승차권 자동발매기) ============ */
+  /* 창녕에는 기차역이 없어 동대구·밀양·구미역에서 타는 상황으로 연습합니다. 요금은 거리 기준 연습용 근사치입니다. */
+  var trainStations = [
+    {id:"seoul", name:"서울", km:0, ktx:true},
+    {id:"suwon", name:"수원", km:41.5, ktx:false},
+    {id:"daejeon", name:"대전", km:166.3, ktx:true},
+    {id:"gumi", name:"구미", km:262.4, ktx:false},
+    {id:"dongdaegu", name:"동대구", km:323.1, ktx:true},
+    {id:"miryang", name:"밀양", km:381.6, ktx:true},
+    {id:"busan", name:"부산", km:441.7, ktx:true}
+  ];
+  var TRAIN_ORIGINS = [
+    {id:"dongdaegu", emoji:"🏙️", info:"KTX · ITX-새마을 · 무궁화호"},
+    {id:"miryang", emoji:"🌿", info:"KTX · ITX-새마을 · 무궁화호"},
+    {id:"gumi", emoji:"🏭", info:"ITX-새마을 · 무궁화호 (KTX 없음)"}
+  ];
+  var TRAIN_TYPES = {
+    ktx:{name:"KTX", perKm:135, min:8400, kmPerMin:2.9, numBase:102},
+    itx:{name:"ITX-새마을", perKm:96, min:4800, kmPerMin:1.6, numBase:1002},
+    mugung:{name:"무궁화호", perKm:65, min:2600, kmPerMin:1.35, numBase:1202}
+  };
+  var TRAIN_PATTERN = [
+    ["ktx","06:12"],["mugung","06:40"],["ktx","07:25"],["itx","08:05"],["ktx","09:10"],["mugung","10:02"],
+    ["ktx","11:30"],["itx","12:48"],["ktx","14:05"],["mugung","15:20"],["ktx","16:40"],["itx","17:55"],
+    ["ktx","19:10"],["mugung","20:25"],["ktx","21:30"]
+  ];
+  var TRAIN_PAX = [
+    {id:"adult", name:"어른", desc:"만 13세 ~ 64세"},
+    {id:"senior", name:"경로", desc:"만 65세 이상 · 신분증 필요"},
+    {id:"child", name:"어린이", desc:"만 6세 ~ 12세"}
+  ];
+  function stationById(id){ for(var i = 0; i < trainStations.length; i++){ if(trainStations[i].id === id) return trainStations[i]; } return null; }
+  function trainKm(){ return Math.abs(stationById(state.dest).km - stationById(state.origin).km); }
+  function isWeekday(offset){ var d = dayInfo(offset).dow; return d >= 1 && d <= 5; }
+  function trainSchedule(fromId, toId, dayOffset){
+    var from = stationById(fromId), to = stationById(toId);
+    var km = Math.abs(to.km - from.km);
+    var north = to.km < from.km;
+    var oIdx = trainStations.indexOf(from), dIdx = trainStations.indexOf(to);
+    var shift = oIdx * 4 + (north ? 0 : 3);
+    var count = {ktx:0, itx:0, mugung:0};
+    var list = [];
+    TRAIN_PATTERN.forEach(function(p, i){
+      var type = p[0], T = TRAIN_TYPES[type];
+      if(type === "ktx" && !(from.ktx && to.ktx)) return;
+      var dep = toMin(p[1]) + shift;
+      var run = Math.max(15, Math.round(km / T.kmPerMin));
+      var no = T.numBase + count[type] * 2 + (north ? 0 : 1);
+      count[type]++;
+      var seed = i * 131 + dayOffset * 17 + oIdx * 7 + dIdx * 3;
+      list.push({ idx:list.length, type:type, no:no, dep:dep, arr:dep + run, run:run, seed:seed,
+        gone: dayOffset === 0 && dep <= nowMinutes(),
+        genSold: seedRand(seed) < 0.15, spSold: seedRand(seed + 5) < 0.2 });
+    });
+    return list;
+  }
+  function trainBaseFare(type, km){ var T = TRAIN_TYPES[type]; return Math.max(T.min, Math.round(km * T.perKm / 100) * 100); }
+  function trainClassFare(type, km, cls){ var g = trainBaseFare(type, km); return cls === "special" ? Math.round(g * 1.4 / 100) * 100 : g; }
+  function trainPaxFare(paxId){
+    var km = trainKm(), type = state.train.type;
+    var g = trainBaseFare(type, km);
+    var extra = trainClassFare(type, km, state.cls) - g;
+    if(paxId === "senior" && isWeekday(state.dayOffset)) return floor100(g * 0.7) + extra;
+    if(paxId === "child") return floor100(g * 0.5) + extra;
+    return g + extra;
+  }
+  function trainTotal(){
+    if(!state.train) return 0;
+    return paxList(state.pax, TRAIN_PAX).reduce(function(sum, p){ return sum + trainPaxFare(p.id); }, 0);
+  }
+  function trainCars(type, cls){
+    if(type === "ktx") return cls === "special" ? [3, 4] : [5, 6, 7, 8];
+    return [1, 2, 3, 4, 5];
+  }
+  function trainSeatRows(type, cls){
+    var rows = [], r, d;
+    function s(label, win, dir){ return {label:label, win:win, dir:dir}; }
+    if(type === "ktx" && cls === "special"){
+      for(r = 1; r <= 10; r++){ d = r <= 5 ? "rev" : "fwd"; rows.push([s(r + "A", true, d), null, s(r + "C", false, d), s(r + "D", true, d)]); }
+    } else if(type === "ktx"){
+      for(r = 1; r <= 14; r++){ d = r <= 7 ? "rev" : "fwd"; rows.push([s(r + "A", true, d), s(r + "B", false, d), null, s(r + "C", false, d), s(r + "D", true, d)]); }
+    } else {
+      for(r = 0; r < 15; r++){ var n = r * 4; rows.push([s(String(n + 1), true, "fwd"), s(String(n + 2), false, "fwd"), null, s(String(n + 3), false, "fwd"), s(String(n + 4), true, "fwd")]); }
+    }
+    return rows;
+  }
+  function trainOccupied(car, k){ return seedRand(state.train.seed * 11 + car * 97 + k) < 0.4; }
+  function trainSeatText(seat){ return seat.car + "호차 " + seat.label + (state.train.type === "ktx" ? "" : "번"); }
+  function dirText(dir){ return dir === "rev" ? "역방향" : "순방향"; }
+  function trainName(){ return TRAIN_TYPES[state.train.type].name + " " + state.train.no; }
+  function trainRouteBar(){
+    var extra = "";
+    if(state.dayOffset !== null) extra += '<small>' + dayInfo(state.dayOffset).label + '</small>';
+    if(state.train) extra += '<small>' + trainName() + ' · ' + hhmm(state.train.dep) + ' 출발 · ' + (state.cls === "special" ? "특실" : "일반실") + '</small>';
+    return '<div class="route-bar">' + stationById(state.origin).name + ' <span>➜</span> ' + (state.dest ? stationById(state.dest).name : "?") + extra + '</div>';
+  }
+  function trainAutoAssign(){
+    var need = paxTotal(state.pax);
+    var cars = trainCars(state.train.type, state.cls);
+    var rows = trainSeatRows(state.train.type, state.cls);
+    var picked = [];
+    ["fwd", "rev"].forEach(function(wantDir){
+      cars.forEach(function(car){
+        var k = 0;
+        rows.forEach(function(row){
+          row.forEach(function(seat){
+            if(seat === null) return;
+            k++;
+            if(picked.length >= need || seat.dir !== wantDir || trainOccupied(car, k)) return;
+            picked.push({ id:car + "-" + seat.label, car:String(car), label:seat.label, dir:seat.dir });
+          });
+        });
+      });
+    });
+    return picked.length === need ? picked : null;
+  }
+
+  var trainScreens = [
+    /* 0. 어느 역에서 탈지 고르기 */
+    {
+      label:"역 고르기",
+      render:function(){
+        var cards = TRAIN_ORIGINS.map(function(o){
+          return '<div class="choice-card" data-origin="' + o.id + '"><span class="emoji">' + o.emoji + '</span>' + stationById(o.id).name + '역<div class="choice-sub">' + o.info + '</div></div>';
+        }).join("");
+        return (
+          '<div class="screen-title">어느 역에서 기차를 타시나요?</div>' +
+          '<div class="notice-box">💡 창녕에는 기차역이 없어요. 가까운 <b>동대구역 · 밀양역 · 구미역</b>에 가서 타요.<br>구미역에는 KTX가 서지 않아요.</div>' +
+          '<div class="choice-row three">' + cards + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-origin]").forEach(function(card){
+          bindActivate(card, function(){
+            state.origin = card.getAttribute("data-origin");
+            state.dest = null; state.train = null; state.seats = [];
+            goToScreen(1);
+          });
+        });
+      }
+    },
+    /* 1. 발매기 시작 화면 */
+    {
+      label:"시작",
+      render:function(){
+        return (
+          '<div class="screen-title">' + stationById(state.origin).name + '역 승차권 자동발매기 🚆</div>' +
+          '<div class="screen-sub">기차표를 사려면 아래 <b>승차권 구입</b> 버튼을 눌러주세요.</div>' +
+          '<button class="big-tap-btn" id="act-start"><span class="emoji">🎫</span>승차권 구입</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-start").addEventListener("click", function(){ goToScreen(2); });
+      }
+    },
+    /* 2. 도착역 선택 */
+    {
+      label:"도착역 선택",
+      render:function(){
+        var origin = stationById(state.origin);
+        var items = trainStations.filter(function(s){ return s.id !== state.origin; }).map(function(s){
+          var ktx = s.ktx && origin.ktx;
+          return (
+            '<div class="menu-card' + (state.dest === s.id ? " sel" : "") + '" data-dest="' + s.id + '">' +
+              '<div class="name" style="font-size:1.4rem;">' + s.name + '</div>' +
+              '<div class="price">' + (ktx ? "KTX · 새마을 · 무궁화" : "새마을 · 무궁화") + '</div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="screen-title">도착역을 골라주세요</div>' +
+          '<div class="screen-sub">출발역: <b>' + origin.name + '</b> (지금 계신 역이에요)</div>' +
+          '<div class="menu-grid">' + items + '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-dest]").forEach(function(card){
+          bindActivate(card, function(){
+            state.dest = card.getAttribute("data-dest");
+            state.train = null; state.seats = [];
+            goToScreen(3);
+          });
+        });
+      }
+    },
+    /* 3. 날짜 선택 */
+    {
+      label:"날짜 선택",
+      render:function(){
+        return (
+          trainRouteBar() +
+          '<div class="screen-title">언제 타시나요?</div>' +
+          '<div class="screen-sub">출발 날짜를 눌러주세요. 맨 앞이 오늘이에요.</div>' +
+          renderDayPicker(state.dayOffset)
+        );
+      },
+      attach:function(root){
+        attachDayPicker(root, function(off){ state.dayOffset = off; state.train = null; state.seats = []; goToScreen(4); });
+      }
+    },
+    /* 4. 인원 선택 */
+    {
+      label:"인원 선택",
+      render:function(){
+        var total = paxTotal(state.pax);
+        var weekday = isWeekday(state.dayOffset);
+        var note = weekday
+          ? '💡 만 65세 이상이시면 <b>경로</b>를 고르세요. 월~금요일에는 <b>30% 할인</b>돼요.<br>처음엔 <b>어른 1명</b>이 골라져 있으니, 어르신이면 어른을 0으로 줄이고 경로를 올리세요.'
+          : '💡 고르신 날은 <b>' + WEEK_KO[dayInfo(state.dayOffset).dow] + '요일</b>이라 경로 할인이 안 돼요 (토·일·공휴일 제외).<br>그래도 만 65세 이상이시면 <b>경로</b>로 고르시면 돼요.';
+        return (
+          trainRouteBar() +
+          '<div class="screen-title">몇 분이 타시나요?</div>' +
+          '<div class="notice-box">' + note + '</div>' +
+          renderCountRows(TRAIN_PAX, state.pax) +
+          '<button class="confirm-btn" id="act-next"' + (total === 0 ? " disabled" : "") + '>열차 조회하기 (총 ' + total + '명)</button>'
+        );
+      },
+      attach:function(root){
+        attachCountRows(root, state.pax, 9);
+        root.querySelector("#act-next").addEventListener("click", function(){
+          if(paxTotal(state.pax) === 0){ showFeedback("인원을 1명 이상 골라주세요"); return; }
+          state.train = null; state.seats = [];
+          goToScreen(5);
+        });
+      }
+    },
+    /* 5. 열차 조회 */
+    {
+      label:"열차 선택",
+      render:function(){
+        var km = Math.abs(stationById(state.dest).km - stationById(state.origin).km);
+        var rows = trainSchedule(state.origin, state.dest, state.dayOffset).map(function(t){
+          var genBtn, spBtn;
+          if(t.gone){
+            genBtn = '<button class="sched-btn" disabled>출발함</button>';
+            spBtn = '<button class="sched-btn" disabled>출발함</button>';
+          } else {
+            genBtn = t.genSold ? '<button class="sched-btn" disabled>일반실<small>매진</small></button>'
+              : '<button class="sched-btn" data-train="' + t.idx + '" data-cls="general">일반실<small>' + formatWon(trainClassFare(t.type, km, "general")) + '</small></button>';
+            if(t.type !== "ktx") spBtn = '<button class="sched-btn" disabled>특실<small>없음</small></button>';
+            else spBtn = t.spSold ? '<button class="sched-btn" disabled>특실<small>매진</small></button>'
+              : '<button class="sched-btn special" data-train="' + t.idx + '" data-cls="special">특실<small>' + formatWon(trainClassFare(t.type, km, "special")) + '</small></button>';
+          }
+          return (
+            '<div class="sched-row train' + (t.gone ? " gone" : "") + '">' +
+              '<div class="sched-type type-' + t.type + '">' + TRAIN_TYPES[t.type].name + '<small>' + t.no + '열차</small></div>' +
+              '<div class="sched-time">' + hhmm(t.dep) + ' ➜ ' + hhmm(t.arr) + '<small>' + durText(t.run) + ' 걸림</small></div>' +
+              genBtn + spBtn +
+            '</div>'
+          );
+        }).join("");
+        return (
+          trainRouteBar() +
+          '<div class="screen-title">타실 열차를 골라주세요</div>' +
+          '<div class="screen-sub">요금은 <b>어른 1명</b> 기준이에요. <b>일반실</b>이나 <b>특실</b> 버튼을 누르세요. (특실은 KTX에만 있어요)</div>' +
+          '<div class="sched-list">' + rows + '</div>'
+        );
+      },
+      attach:function(root){
+        var list = trainSchedule(state.origin, state.dest, state.dayOffset);
+        root.querySelectorAll("[data-train]").forEach(function(btn){
+          btn.addEventListener("click", function(){
+            state.train = list[Number(btn.getAttribute("data-train"))];
+            state.cls = btn.getAttribute("data-cls");
+            state.car = trainCars(state.train.type, state.cls)[0];
+            state.seats = [];
+            goToScreen(6);
+          });
+        });
+      }
+    },
+    /* 6. 좌석 선택 (호차 · 순방향/역방향 · 창측/내측) */
+    {
+      label:"좌석 선택",
+      render:function(){
+        var need = paxTotal(state.pax);
+        var isKtx = state.train.type === "ktx";
+        var carTabs = trainCars(state.train.type, state.cls).map(function(c){
+          var cnt = state.seats.filter(function(s){ return s.car === String(c); }).length;
+          return '<button class="option-btn small' + (state.car === c ? " selected" : "") + '" data-car-tab="' + c + '">' + c + '호차' + (cnt ? ' (' + cnt + ')' : '') + '</button>';
+        }).join("");
+        var k = 0;
+        var rowsHtml = trainSeatRows(state.train.type, state.cls).map(function(row){
+          return '<div class="seat-row">' + row.map(function(seat){
+            if(seat === null) return '<div class="seat-aisle"></div>';
+            k++;
+            var id = state.car + "-" + seat.label;
+            var occ = trainOccupied(state.car, k);
+            var sel = seatIndexOf(id) !== -1;
+            return (
+              '<div class="seat tseat' + (seat.win ? " win" : "") + (occ ? " occupied" : "") + (sel ? " sel" : "") + '" data-seat="' + id + '" data-car="' + state.car + '" data-label="' + seat.label + '" data-dir="' + seat.dir + '">' +
+                seat.label + '<span class="dir ' + seat.dir + '">' + (seat.dir === "rev" ? "역" : "순") + '</span>' +
+              '</div>'
+            );
+          }).join("") + '</div>';
+        }).join("");
+        var picked = state.seats.length ? '<div class="picked-list">고른 좌석: ' + state.seats.map(function(s){ return '<b>' + trainSeatText(s) + '</b>(' + dirText(s.dir) + ')'; }).join(", ") + '</div>' : '';
+        return (
+          trainRouteBar() +
+          '<div class="screen-title">좌석을 골라주세요</div>' +
+          '<div class="screen-sub">' + need + '명이니까 빈 좌석을 <b>' + need + '개</b> 눌러주세요. 맨 바깥쪽 자리가 <b>창가(창측)</b>예요.' +
+            (isKtx ? ' KTX는 <b>순방향</b>(앞을 보고 앉음)과 <b>역방향</b>(뒤를 보고 앉음) 자리가 따로 있어요.' : ' 무궁화·새마을은 의자가 가는 방향으로 돌려져 있어 모두 순방향이에요.') +
+          '</div>' +
+          '<div class="car-tabs">' + carTabs + '</div>' +
+          '<div class="seat-front">▲ 기차가 가는 방향 ▲</div>' +
+          '<div class="seat-map">' + rowsHtml + '</div>' +
+          renderSeatLegend(true) +
+          picked +
+          '<button class="confirm-btn" id="act-seat-done"' + (state.seats.length !== need ? " disabled" : "") + '>좌석 선택 완료 (' + state.seats.length + '/' + need + ')</button>' +
+          '<button class="ghost-btn" id="act-auto">🎲 자리 상관없어요 (자동으로 골라주기)</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelectorAll("[data-car-tab]").forEach(function(btn){
+          btn.addEventListener("click", function(){ state.car = Number(btn.getAttribute("data-car-tab")); renderScreen(); });
+        });
+        attachSeatPicker(root, paxTotal(state.pax), function(){ goToScreen(7); });
+        root.querySelector("#act-auto").addEventListener("click", function(){
+          var picked = trainAutoAssign();
+          if(!picked){ showFeedback("빈 자리가 모자라요. 다른 열차를 골라주세요"); return; }
+          state.seats = picked;
+          goToScreen(7);
+        });
+      }
+    },
+    /* 7. 구매 내용 확인 */
+    {
+      label:"내용 확인",
+      render:function(){
+        var weekday = isWeekday(state.dayOffset);
+        var paxRows = TRAIN_PAX.filter(function(p){ return state.pax[p.id] > 0; }).map(function(p){
+          var tag = "";
+          if(p.id === "senior") tag = weekday ? ' <span class="disc">30% 할인</span>' : ' <span class="disc off">주말 할인 없음</span>';
+          if(p.id === "child") tag = ' <span class="disc">50% 할인</span>';
+          return '<div class="cart-row"><span class="label">' + p.name + ' ' + state.pax[p.id] + '명' + tag + '</span><span>' + formatWon(trainPaxFare(p.id) * state.pax[p.id]) + '</span></div>';
+        }).join("");
+        var seatText = state.seats.map(function(s){ return trainSeatText(s) + " (" + dirText(s.dir) + ")"; }).join("<br>");
+        return (
+          '<div class="screen-title">구매 내용을 확인해주세요</div>' +
+          '<div class="screen-sub">틀린 곳이 있으면 위의 "이전" 버튼으로 돌아갈 수 있어요.</div>' +
+          '<div class="cart-box">' +
+            '<div class="cart-row"><span class="label">열차</span><span>' + trainName() + ' · ' + (state.cls === "special" ? "특실" : "일반실") + '</span></div>' +
+            '<div class="cart-row"><span class="label">날짜</span><span>' + dayInfo(state.dayOffset).label + '</span></div>' +
+            '<div class="cart-row"><span class="label">출발 ➜ 도착</span><span>' + stationById(state.origin).name + ' ' + hhmm(state.train.dep) + ' ➜ ' + stationById(state.dest).name + ' ' + hhmm(state.train.arr) + '</span></div>' +
+            '<div class="cart-row"><span class="label">좌석</span><span style="text-align:right;">' + seatText + '</span></div>' +
+            paxRows +
+            '<div class="cart-row" style="font-weight:900;"><span class="label">결제할 금액</span><span style="color:var(--primary-dark);">' + formatWon(trainTotal()) + '</span></div>' +
+          '</div>' +
+          (state.pax.senior > 0 ? '<div class="notice-box">🪪 경로 승차권은 기차 안에서 <b>신분증</b>을 보여달라고 할 수 있어요. 꼭 챙기세요.</div>' : '') +
+          '<button class="confirm-btn" id="act-checkout">💳 결제하기</button>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-checkout").addEventListener("click", function(){ goToScreen(8); });
+      }
+    },
+    /* 8. 결제 수단 */
+    {
+      label:"결제 수단",
+      render:function(){
+        return (
+          '<div class="screen-title">결제 방법을 골라주세요</div>' +
+          '<div class="screen-sub">결제할 금액: <b>' + formatWon(trainTotal()) + '</b></div>' +
+          renderPayGrid(TICKET_PAY)
+        );
+      },
+      attach:function(root){
+        attachPayGrid(root, function(id){ state.payment = id; goToScreen(9); });
+      }
+    },
+    /* 9. 결제 진행 */
+    paymentAnimScreen(10),
+    /* 10. 승차권 출력 */
+    {
+      label:"승차권 출력",
+      render:function(){
+        var tickets = paxList(state.pax, TRAIN_PAX).map(function(p, i){
+          var seat = state.seats[i];
+          return (
+            '<div class="ticket-box">' +
+              '<div class="ticket-head"><span class="type-' + state.train.type + '">' + trainName() + '</span> · ' + (state.cls === "special" ? "특실" : "일반실") + '</div>' +
+              '<div class="cart-row"><span class="label">날짜</span><span>' + dayInfo(state.dayOffset).label + '</span></div>' +
+              '<div class="cart-row"><span class="label">' + stationById(state.origin).name + ' ➜ ' + stationById(state.dest).name + '</span><span class="big">' + hhmm(state.train.dep) + ' ➜ ' + hhmm(state.train.arr) + '</span></div>' +
+              '<div class="cart-row"><span class="label">좌석</span><span class="big">' + trainSeatText(seat) + '</span></div>' +
+              '<div class="cart-row"><span class="label">방향</span><span>' + dirText(seat.dir) + (seat.dir === "rev" ? " (뒤를 보고 앉음)" : " (앞을 보고 앉음)") + '</span></div>' +
+              '<div class="cart-row"><span class="label">' + p.name + '</span><span>' + formatWon(trainPaxFare(p.id)) + '</span></div>' +
+            '</div>'
+          );
+        }).join("");
+        return (
+          '<div class="done-box">' +
+            '<div class="emoji">🎫</div>' +
+            '<div class="screen-title">승차권이 나왔어요!</div>' +
+            '<div class="screen-sub">승차권(' + paxTotal(state.pax) + '장)을 꼭 챙기세요. <b>타는 곳(몇 번 승강장)</b>은 역 안 전광판에서 <b>' + state.train.no + '번 열차</b>를 찾아 확인하세요. 승강장 바닥에 <b>호차 번호</b>가 적혀 있어요.</div>' +
+            tickets +
+            '<button class="confirm-btn" id="act-finish">연습 마치기</button>' +
+          '</div>'
+        );
+      },
+      attach:function(root){
+        root.querySelector("#act-finish").addEventListener("click", finishScenario);
+      }
+    }
+  ];
+
+  scenarioDefs.train = {
+    title:"기차 승차권 구매",
+    emoji:"🚆",
+    screens: trainScreens,
+    initialState:function(){
+      return { origin:null, dest:null, dayOffset:null, pax:{adult:1, senior:0, child:0}, train:null, cls:null, car:null, seats:[], payment:null };
+    },
+    summaryStats:function(state){
+      return { aLabel:"열차", aVal:state.train ? trainName() : "-", bLabel:"결제 금액", bVal:formatWon(trainTotal()) };
     }
   };
 
